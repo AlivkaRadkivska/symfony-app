@@ -26,13 +26,13 @@ class TestController extends AbstractController
     #[Route('/', name: 'get_tests', methods: ['GET'])]
     public function getTests(Request $request, SessionInterface $session): JsonResponse
     {
-        $reqParams = $request->query->all();
+        $requestParams = $request->query->all();
         $testItems = $session->get('testItems');
 
-        $res = (array_key_exists('search', $reqParams)) ? array_filter(
+        $res = (array_key_exists('search', $requestParams)) ? array_filter(
             $testItems,
             fn($item) =>
-            strpos($item['name'], $reqParams['search']) !== false
+            strpos($item['name'], $requestParams['search']) !== false
         ) : $testItems;
 
 
@@ -44,9 +44,11 @@ class TestController extends AbstractController
     {
         $testItems = $session->get('testItems');
 
-        foreach ($testItems as $item)
-            if ($item['id'] == $id)
+        foreach ($testItems as $item) {
+            if ($item['id'] == $id) {
                 return new JsonResponse($item, 200);
+            }
+        }
 
         return new JsonResponse(['message' => 'Item not found'], 404);
     }
@@ -54,17 +56,21 @@ class TestController extends AbstractController
     #[Route('/add', name: 'add_test', methods: ['POST'])]
     public function addTest(Request $request, SessionInterface $session): JsonResponse
     {
-        $reqBody = json_decode($request->getContent(), true);
+        $requestBody = json_decode($request->getContent(), true);
 
-        if (!isset($reqBody['id'], $reqBody['name'], $reqBody['desc'])) {
+        if (!isset($reqBody['id'], $requestBody['name'], $requestBody['desc'])) {
             return new JsonResponse(['message' => 'There are missing fields'], 400);
         }
 
         $testItems = $session->get('testItems', []);
-        $testItems[] = $reqBody;
+
+        $requestBody = json_decode($request->getContent(), true);
+        $filteredData = array_intersect_key($requestBody, array_flip(['id', 'name', 'desc']));
+
+        $testItems[] = $filteredData;
         $session->set('testItems', $testItems);
 
-        return new JsonResponse($reqBody, 201);
+        return new JsonResponse($requestBody, 201);
     }
 
     #[Route('/update/{id}', name: 'update_test', methods: ['PATCH'])]
@@ -72,16 +78,17 @@ class TestController extends AbstractController
     {
         $testItems = $session->get('testItems');
 
-        foreach ($testItems as $i => $item)
+        foreach ($testItems as $i => $item) {
             if ($item['id'] == $id) {
-                $reqBody = json_decode($request->getContent(), true);
-                $filteredData = array_intersect_key($reqBody, array_flip(['id', 'name', 'desc']));
+                $requestBody = json_decode($request->getContent(), true);
+                $filteredData = array_intersect_key($requestBody, array_flip(['id', 'name', 'desc']));
 
                 $testItems[$i] = array_merge($item, $filteredData);
                 $session->set('testItems', $testItems);
 
                 return new JsonResponse($testItems[$i], 200);
             }
+        }
 
         return new JsonResponse(['message' => 'Item not found'], 404);
     }
@@ -91,13 +98,14 @@ class TestController extends AbstractController
     {
         $testItems = $session->get('testItems');
 
-        foreach ($testItems as $i => $item)
+        foreach ($testItems as $i => $item) {
             if ($item['id'] == $id) {
                 unset($testItems[$i]);
                 $session->set('testItems', $testItems);
 
                 return new JsonResponse([], 204);
             }
+        }
 
         return new JsonResponse(['message' => 'Item not found'], 404);
     }
