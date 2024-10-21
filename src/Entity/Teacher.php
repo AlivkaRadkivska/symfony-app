@@ -3,11 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\TeacherRepository;
-use App\Entity\Department;
 use JsonSerializable;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\ManyToOne;
-use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity(repositoryClass: TeacherRepository::class)]
 class Teacher implements JsonSerializable
@@ -32,14 +31,28 @@ class Teacher implements JsonSerializable
     #[ORM\Column(length: 255)]
     private ?string $position = null;
 
-    #[ManyToOne(targetEntity: Department::class, inversedBy: 'teachers')]
-    #[JoinColumn(name: 'department_id', referencedColumnName: 'id', onDelete: 'restrict')]
+    #[ORM\ManyToOne(targetEntity: Department::class, inversedBy: 'teachers')]
+    #[ORM\JoinColumn(name: 'department_id', referencedColumnName: 'id', onDelete: 'restrict')]
     private ?Department $department = null;
+
+    #[ORM\OneToMany(mappedBy: 'teacher', targetEntity: Course::class)]
+    private ?Collection $courses;
+
+    /**
+     * __construct
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->courses = new ArrayCollection();
+    }
+
 
     /**
      * Get the value of id
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -47,7 +60,7 @@ class Teacher implements JsonSerializable
     /**
      * Get the value of email
      */
-    public function getEmail()
+    public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -58,7 +71,7 @@ class Teacher implements JsonSerializable
      * @param string $email
      * @return  self
      */
-    public function setEmail(string $email): self
+    public function setEmail(string $email): static
     {
         $this->email = $email;
 
@@ -68,7 +81,7 @@ class Teacher implements JsonSerializable
     /**
      * Get the value of password
      */
-    public function getPassword()
+    public function getPassword(): ?string
     {
         return $this->password;
     }
@@ -79,7 +92,7 @@ class Teacher implements JsonSerializable
      * @param string $password
      * @return  self
      */
-    public function setPassword(string $password): self
+    public function setPassword(string $password): static
     {
         $this->password = $password;
 
@@ -89,7 +102,7 @@ class Teacher implements JsonSerializable
     /**
      * Get the value of firstName
      */
-    public function getFirstName()
+    public function getFirstName(): ?string
     {
         return $this->firstName;
     }
@@ -100,7 +113,7 @@ class Teacher implements JsonSerializable
      * @param string $firstName
      * @return  self
      */
-    public function setFirstName(string $firstName): self
+    public function setFirstName(string $firstName): static
     {
         $this->firstName = $firstName;
 
@@ -110,7 +123,7 @@ class Teacher implements JsonSerializable
     /**
      * Get the value of lastName
      */
-    public function getLastName()
+    public function getLastName(): ?string
     {
         return $this->lastName;
     }
@@ -121,7 +134,7 @@ class Teacher implements JsonSerializable
      * @param string $lastName
      * @return  self
      */
-    public function setLastName(string $lastName): self
+    public function setLastName(string $lastName): static
     {
         $this->lastName = $lastName;
 
@@ -131,7 +144,7 @@ class Teacher implements JsonSerializable
     /**
      * Get the value of position
      */
-    public function getPosition()
+    public function getPosition(): ?string
     {
         return $this->position;
     }
@@ -142,7 +155,7 @@ class Teacher implements JsonSerializable
      * @param string $position
      * @return  self
      */
-    public function setPosition(string $position): self
+    public function setPosition(string $position): static
     {
         $this->position = $position;
 
@@ -152,7 +165,7 @@ class Teacher implements JsonSerializable
     /**
      * Get the value of department
      */
-    public function getDepartment()
+    public function getDepartment(): ?Department
     {
         return $this->department;
     }
@@ -163,11 +176,28 @@ class Teacher implements JsonSerializable
      * @param   Department $department
      * @return  self
      */
-    public function setDepartment(Department $department): self
+    public function setDepartment(Department $department): static
     {
         $this->department = $department;
 
         return $this;
+    }
+
+    /**
+     * getGroups
+     *
+     * @return mixed
+     */
+    public function getCourses(): mixed
+    {
+        return array_map(function ($course) {
+            return [
+                'id' => $course?->getId(),
+                'name' => $course?->getName(),
+                'description' => $course?->getDescription(),
+                'credits' => $course?->getCredits(),
+            ];
+        }, iterator_to_array($this->courses));
     }
 
     /**
@@ -188,7 +218,8 @@ class Teacher implements JsonSerializable
                 'id' => $this->department?->getId(),
                 'name' => $this->department?->getName(),
                 'faculty' => $this->department?->getFaculty()
-            ]
+            ],
+            'courses' => $this->getCourses()
         ];
     }
 }

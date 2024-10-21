@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\DepartmentRepository;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
-use App\Entity\Teacher;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 
@@ -26,6 +25,14 @@ class Department implements JsonSerializable
     #[ORM\OneToMany(mappedBy: 'department', targetEntity: Teacher::class)]
     private ?Collection $teachers;
 
+    #[ORM\OneToMany(mappedBy: 'department', targetEntity: Group::class)]
+    private ?Collection $groups;
+
+    /**
+     * __construct
+     *
+     * @return void
+     */
     public function __construct()
     {
         $this->teachers = new ArrayCollection();
@@ -34,7 +41,7 @@ class Department implements JsonSerializable
     /**
      * Get the value of id
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -42,7 +49,7 @@ class Department implements JsonSerializable
     /**
      * Get the value of name
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -53,7 +60,7 @@ class Department implements JsonSerializable
      * @param string $name
      * @return  self
      */
-    public function setName(string $name): self
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -63,7 +70,7 @@ class Department implements JsonSerializable
     /**
      * Get the value of faculty
      */
-    public function getFaculty()
+    public function getFaculty(): ?string
     {
         return $this->faculty;
     }
@@ -74,7 +81,7 @@ class Department implements JsonSerializable
      * @param string $faculty
      * @return  self
      */
-    public function setFaculty(string $faculty): self
+    public function setFaculty(string $faculty): static
     {
         $this->faculty = $faculty;
 
@@ -90,12 +97,30 @@ class Department implements JsonSerializable
     {
         return array_map(function ($teacher) {
             return [
+                'id' => $teacher?->getId(),
                 'email' => $teacher?->getEmail(),
                 'firstName' => $teacher?->getFirstName(),
                 'secondName' => $teacher?->getLastName(),
                 'position' => $teacher?->getPosition(),
             ];
         }, iterator_to_array($this->teachers));
+    }
+
+    /**
+     * getGroups
+     *
+     * @return mixed
+     */
+    public function getGroups(): mixed
+    {
+        return array_map(function ($group) {
+            return [
+                'id' => $group?->getId(),
+                'name' => $group?->getName(),
+                'major' => $group?->getMajor(),
+                'year' => $group?->getYear(),
+            ];
+        }, iterator_to_array($this->groups));
     }
 
     /**
@@ -110,6 +135,7 @@ class Department implements JsonSerializable
             'name' => $this->name,
             'faculty' => $this->faculty,
             'teachers' => $this->getTeachers(),
+            'groups' => $this->getGroups(),
         ];
     }
 }

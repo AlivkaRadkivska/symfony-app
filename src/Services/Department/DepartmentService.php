@@ -66,15 +66,14 @@ class DepartmentService
   /**
    * createDepartment
    *
-   * @param  string $name
-   * @param  string $faculty
+   * @param  mixed $data
    * @return Department
    */
-  public function createDepartment(string $name, string $faculty): Department
+  public function createDepartment(array $data): Department
   {
     $department = new Department();
 
-    $department->setName($name)->setFaculty($faculty);
+    $department->setName($data['name'])->setFaculty($data['faculty']);
 
     $this->requestCheckerService->validateRequestDataByConstraints($department);
 
@@ -122,8 +121,8 @@ class DepartmentService
   {
     $department = $this->getDepartment($id);
 
-    if (!empty($department->getTeachers())) {
-      throw new ConflictHttpException('Department with id - ' . $id . ' cannot be deleted because it is related to teachers.');
+    if (!empty($department->getTeachers()) && !empty($department->getGroups())) {
+      throw new ConflictHttpException('Department with id - ' . $id . ' cannot be deleted because it is related to teachers or groups.');
     }
 
     $this->entityManager->remove($department);

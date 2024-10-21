@@ -19,7 +19,7 @@ class DepartmentController extends AbstractController
     private RequestCheckerService $requestChecker;
 
     /**
-     * @var RequestCheckerService
+     * @var DepartmentService
      */
     private DepartmentService $departmentService;
 
@@ -30,7 +30,6 @@ class DepartmentController extends AbstractController
         'name',
         'faculty'
     ];
-
 
     /**
      * __construct
@@ -59,7 +58,6 @@ class DepartmentController extends AbstractController
         return new JsonResponse($departments, Response::HTTP_OK);
     }
 
-
     /**
      * addDepartment
      *
@@ -72,12 +70,10 @@ class DepartmentController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
         $this->requestChecker::check($requestData, self::REQUIRED_DEPARTMENT_FIELDS);
 
-        $department = $this->departmentService->createDepartment($requestData['name'], $requestData['faculty']);
-
+        $department = $this->departmentService->createDepartment($requestData);
 
         return new JsonResponse($department, Response::HTTP_OK);
     }
-
 
     /**
      * deleteDepartment
@@ -92,8 +88,6 @@ class DepartmentController extends AbstractController
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
-
-
 
     /**
      * updateDepartment

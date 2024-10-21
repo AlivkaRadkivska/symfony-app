@@ -28,6 +28,7 @@ class TeacherService
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param DepartmentService $departmentService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
