@@ -32,6 +32,15 @@ class Course implements JsonSerializable
     #[ORM\ManyToMany(targetEntity: Student::class, mappedBy: 'courses')]
     private Collection $students;
 
+    #[ORM\OneToMany(mappedBy: 'course', targetEntity: Task::class)]
+    private ?Collection $tasks;
+
+    #[ORM\OneToMany(mappedBy: 'course', targetEntity: Exam::class)]
+    private ?Collection $exams;
+
+    #[ORM\OneToMany(mappedBy: 'course', targetEntity: ScheduleEvent::class)]
+    private ?Collection $scheduleEvents;
+
     /**
      * __construct
      *
@@ -40,6 +49,9 @@ class Course implements JsonSerializable
     public function __construct()
     {
         $this->students = new ArrayCollection();
+        $this->tasks = new ArrayCollection();
+        $this->exams = new ArrayCollection();
+        $this->scheduleEvents = new ArrayCollection();
     }
 
 
@@ -195,6 +207,55 @@ class Course implements JsonSerializable
         }
 
         return $this;
+    }
+
+    /**
+     * getTasks
+     *
+     * @return mixed
+     */
+    public function getTasks(): mixed
+    {
+        return array_map(function ($task) {
+            return [
+                'id' => $task?->getId(),
+                'name' => $task?->getTitle(),
+                'dueDate' => $task?->getDueDate(),
+            ];
+        }, iterator_to_array($this->tasks));
+    }
+
+    /**
+     * getExams
+     *
+     * @return mixed
+     */
+    public function getExams(): mixed
+    {
+        return array_map(function ($exam) {
+            return [
+                'id' => $exam?->getId(),
+                'name' => $exam?->getTitle(),
+                'startDate' => $exam?->getStartDate(),
+            ];
+        }, iterator_to_array($this->exams));
+    }
+
+    /**
+     * getScheduleEvents
+     *
+     * @return mixed
+     */
+    public function getScheduleEvents(): mixed
+    {
+        return array_map(function ($scheduleEvent) {
+            return [
+                'id' => $scheduleEvent?->getId(),
+                'meetingLink' => $scheduleEvent?->getMeetingLink(),
+                'startDate' => $scheduleEvent?->getStartDate()->format('Y-m-d H:i'),
+                'endDate' => $scheduleEvent?->getEndDate()->format('Y-m-d H:i'),
+            ];
+        }, iterator_to_array($this->scheduleEvents));
     }
 
     /**

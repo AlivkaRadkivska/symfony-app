@@ -124,6 +124,13 @@ class StudentController extends AbstractController
         return new JsonResponse($student, Response::HTTP_OK);
     }
 
+    /**
+     * joinCourse
+     *
+     * @param  string $id
+     * @param  string $courseId
+     * @return JsonResponse
+     */
     #[Route('/{id}/join-course/{courseId}', name: 'update_student_join_course', methods: ['GET'])]
     public function joinCourse(string $id, string $courseId): JsonResponse
     {
@@ -132,6 +139,13 @@ class StudentController extends AbstractController
         return new JsonResponse($student, Response::HTTP_OK);
     }
 
+    /**
+     * leaveCourse
+     *
+     * @param  string $id
+     * @param  string $courseId
+     * @return JsonResponse
+     */
     #[Route('/{id}/leave-course/{courseId}', name: 'update_student_leave_course', methods: ['GET'])]
     public function leaveCourse(string $id, string $courseId): JsonResponse
     {

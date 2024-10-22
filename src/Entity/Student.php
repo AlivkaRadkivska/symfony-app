@@ -36,6 +36,12 @@ class Student implements JsonSerializable
     #[ORM\JoinTable(name: 'students_courses')]
     private Collection $courses;
 
+    #[ORM\OneToMany(mappedBy: 'student', targetEntity: Submission::class)]
+    private ?Collection $submissions;
+
+    #[ORM\OneToMany(mappedBy: 'student', targetEntity: ExamResult::class)]
+    private ?Collection $examResults;
+
     /**
      * __construct
      *
@@ -44,6 +50,8 @@ class Student implements JsonSerializable
     public function __construct()
     {
         $this->courses = new ArrayCollection();
+        $this->submissions = new ArrayCollection();
+        $this->examResults = new ArrayCollection();
     }
 
     /**
@@ -220,6 +228,50 @@ class Student implements JsonSerializable
         }
 
         return $this;
+    }
+
+    /**
+     * getSubmissions
+     *
+     * @return mixed
+     */
+    public function getSubmissions(): mixed
+    {
+        return array_map(function ($submission) {
+            return [
+                'id' => $submission?->getId(),
+                'answer' => $submission?->getAnswer(),
+                'dueDate' => $submission?->getDueDate(),
+                'task' => [
+                    "id" => $submission?->getTask()->getId(),
+                    "title" => $submission?->getTask()->getTitle(),
+                    "dueDate" => $submission?->getTask()->getDueDate(),
+                ],
+                'obtainedGrade' => $submission?->getObtainedGrade(),
+            ];
+        }, iterator_to_array($this->submissions));
+    }
+
+    /**
+     * getExamResults
+     *
+     * @return mixed
+     */
+    public function getExamResults(): mixed
+    {
+        return array_map(function ($examResult) {
+            return [
+                'id' => $examResult?->getId(),
+                'answer' => $examResult?->getAnswer(),
+                'startDate' => $examResult?->getStartDate(),
+                'exam' => [
+                    "id" => $examResult?->getExam()->getId(),
+                    "title" => $examResult?->getExam()->getTitle(),
+                    "startDate" => $examResult?->getExam()->getStartDate(),
+                ],
+                'obtainedGrade' => $examResult?->getObtainedGrade(),
+            ];
+        }, iterator_to_array($this->examResults));
     }
 
     /**

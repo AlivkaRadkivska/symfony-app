@@ -33,6 +33,9 @@ class Group implements JsonSerializable
     #[ORM\OneToMany(mappedBy: 'group', targetEntity: Student::class)]
     private ?Collection $students;
 
+    #[ORM\OneToMany(mappedBy: 'group', targetEntity: ScheduleEvent::class)]
+    private ?Collection $scheduleEvents;
+
     /**
      * __construct
      *
@@ -41,6 +44,7 @@ class Group implements JsonSerializable
     public function __construct()
     {
         $this->students = new ArrayCollection();
+        $this->scheduleEvents = new ArrayCollection();
     }
 
     /**
@@ -162,6 +166,23 @@ class Group implements JsonSerializable
                 'secondName' => $student?->getLastName(),
             ];
         }, iterator_to_array($this->students));
+    }
+
+    /**
+     * getScheduleEvents
+     *
+     * @return mixed
+     */
+    public function getScheduleEvents(): mixed
+    {
+        return array_map(function ($scheduleEvent) {
+            return [
+                'id' => $scheduleEvent?->getId(),
+                'meetingLink' => $scheduleEvent?->getMeetingLink(),
+                'startDate' => $scheduleEvent?->getStartDate()->format('Y-m-d H:i'),
+                'endDate' => $scheduleEvent?->getEndDate()->format('Y-m-d H:i'),
+            ];
+        }, iterator_to_array($this->scheduleEvents));
     }
 
     /**

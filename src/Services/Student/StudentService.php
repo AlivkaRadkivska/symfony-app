@@ -154,6 +154,13 @@ class StudentService
     $this->entityManager->flush();
   }
 
+  /**
+   * joinCourse
+   *
+   * @param  string $id
+   * @param  string $courseId
+   * @return Student
+   */
   public function joinCourse(string $id, string $courseId): Student
   {
     $student = $this->getStudent($id);
@@ -165,7 +172,15 @@ class StudentService
     return $student;
   }
 
+  /**
+   * leaveCourse
+   *
+   * @param  string $id
+   * @param  string $courseId
+   * @return Student
+   */
   public function leaveCourse(string $id, string $courseId): Student
+
   {
     $student = $this->getStudent($id);
     $course = $this->courseService->getCourse($courseId);
