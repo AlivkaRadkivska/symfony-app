@@ -107,7 +107,4 @@ class CourseController extends AbstractController
 
         return new JsonResponse($course, Response::HTTP_OK);
     }
-
-    // TODO addStudent route
-    // TODO deleteStudent route
 }

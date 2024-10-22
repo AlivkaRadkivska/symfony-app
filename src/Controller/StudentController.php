@@ -26,7 +26,7 @@ class StudentController extends AbstractController
     /**
      * @var array
      */
-    public const REQUIRED_Student_FIELDS = [
+    public const REQUIRED_STUDENT_FIELDS = [
         'email',
         'password',
         'firstName',
@@ -71,7 +71,7 @@ class StudentController extends AbstractController
     public function addStudent(Request $request): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true);
-        $this->requestChecker::check($requestData, self::REQUIRED_Student_FIELDS);
+        $this->requestChecker::check($requestData, self::REQUIRED_STUDENT_FIELDS);
 
         $student = $this->studentService->createStudent($requestData);
 
@@ -124,6 +124,19 @@ class StudentController extends AbstractController
         return new JsonResponse($student, Response::HTTP_OK);
     }
 
-    // TODO addCourse route
-    // TODO deleteCourse route
+    #[Route('/{id}/join-course/{courseId}', name: 'update_student_join_course', methods: ['GET'])]
+    public function joinCourse(string $id, string $courseId): JsonResponse
+    {
+        $student = $this->studentService->joinCourse($id, $courseId);
+
+        return new JsonResponse($student, Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/leave-course/{courseId}', name: 'update_student_leave_course', methods: ['GET'])]
+    public function leaveCourse(string $id, string $courseId): JsonResponse
+    {
+        $student = $this->studentService->leaveCourse($id, $courseId);
+
+        return new JsonResponse($student, Response::HTTP_OK);
+    }
 }

@@ -213,10 +213,10 @@ class Student implements JsonSerializable
     public function removeCourse(Course $course): self
     {
         if ($this->courses->contains($course)) {
-            $this->courses->removeElement($course);
-            if ($course->getStudents()->contains($this)) {
+            if (in_array($this, $course->getStudents())) {
                 $course->removeStudent($this);
             }
+            $this->courses->removeElement($course);
         }
 
         return $this;

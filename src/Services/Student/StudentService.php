@@ -7,6 +7,7 @@ use App\Services\RequestCheckerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Services\Group\GroupService;
+use App\Services\Course\CourseService;
 
 class StudentService
 {
@@ -26,18 +27,26 @@ class StudentService
   private GroupService $groupService;
 
   /**
+   * @var CourseService
+   */
+  private CourseService $courseService;
+
+  /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
    * @param GroupService $groupService
+   * @param CourseService $courseService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
-    GroupService $groupService
+    GroupService $groupService,
+    CourseService $courseService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
     $this->groupService = $groupService;
+    $this->courseService = $courseService;
   }
 
 
@@ -145,5 +154,25 @@ class StudentService
     $this->entityManager->flush();
   }
 
-  // TODO updateCourseList()
+  public function joinCourse(string $id, string $courseId): Student
+  {
+    $student = $this->getStudent($id);
+    $course = $this->courseService->getCourse($courseId);
+
+    $student->addCourse($course);
+    $this->entityManager->flush();
+
+    return $student;
+  }
+
+  public function leaveCourse(string $id, string $courseId): Student
+  {
+    $student = $this->getStudent($id);
+    $course = $this->courseService->getCourse($courseId);
+
+    $student->removeCourse($course);
+    $this->entityManager->flush();
+
+    return $student;
+  }
 }

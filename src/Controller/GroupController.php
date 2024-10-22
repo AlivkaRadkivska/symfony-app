@@ -53,7 +53,7 @@ class GroupController extends AbstractController
      *
      * @return JsonResponse
      */
-    #[Route('/', name: 'get_Groups')]
+    #[Route('/', name: 'get_groups')]
     public function getGroups(): JsonResponse
     {
         $groups = $this->groupService->getGroups();
@@ -75,6 +75,19 @@ class GroupController extends AbstractController
         $group = $this->groupService->createGroup($requestData);
 
         return new JsonResponse($group, Response::HTTP_OK);
+    }
+
+    #[Route('/{id}', name: 'get_group')]
+    /**
+     * getGroup
+     *
+     * @param  string $id
+     * @return JsonResponse
+     */
+    public function getGroup(string $id): JsonResponse
+    {
+        $groups = $this->groupService->getGroup($id);
+        return new JsonResponse($groups, Response::HTTP_OK);
     }
 
     /**

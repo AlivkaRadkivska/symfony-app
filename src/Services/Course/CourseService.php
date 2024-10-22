@@ -3,6 +3,7 @@
 namespace App\Services\Course;
 
 use App\Entity\Course;
+use App\Entity\Student;
 use App\Services\RequestCheckerService;
 use App\Services\Teacher\TeacherService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,14 +27,17 @@ class CourseService
    */
   private TeacherService $teacherService;
 
+
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param TeacherService $teacherService
+   * @param StudentService $studentService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
-    TeacherService $teacherService
+    TeacherService $teacherService,
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
@@ -143,6 +147,4 @@ class CourseService
     $this->entityManager->remove($course);
     $this->entityManager->flush();
   }
-
-  // TODO updateStudentList()
 }
