@@ -4,6 +4,7 @@ namespace App\Services\Group;
 
 use App\Entity\Group;
 use App\Services\RequestCheckerService;
+use App\Services\ObjectHandlerService;
 use App\Services\Department\DepartmentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -11,6 +12,16 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class GroupService
 {
+  /**
+   * @var array
+   */
+  public const REQUIRED_GROUP_FIELDS = [
+    'name',
+    'major',
+    'year',
+    'departmentId'
+  ];
+
   /**
    * @var EntityManagerInterface
    */
@@ -22,6 +33,11 @@ class GroupService
   private RequestCheckerService $requestCheckerService;
 
   /**
+   * @var ObjectHandlerService
+   */
+  private ObjectHandlerService $objectHandlerService;
+
+  /**
    * @var DepartmentService
    */
   private DepartmentService $departmentService;
@@ -29,14 +45,18 @@ class GroupService
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param ObjectHandlerService $objectHandlerService
+   * @param DepartmentService $departmentService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
+    ObjectHandlerService $objectHandlerService,
     DepartmentService $departmentService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
+    $this->objectHandlerService = $objectHandlerService;
     $this->departmentService = $departmentService;
   }
 
@@ -79,18 +99,13 @@ class GroupService
    */
   public function createGroup(array $data): Group
   {
+    $this->requestCheckerService::check($data, self::REQUIRED_GROUP_FIELDS);
     $group = new Group();
 
     $department = $this->departmentService->getDepartment($data['departmentId']);
+    $data['department'] = $department;
 
-    $group
-      ->setName($data['name'])
-      ->setMajor($data['major'])
-      ->setYear($data['year'])
-      ->setDepartment($department);
-
-    $this->requestCheckerService->validateRequestDataByConstraints($group);
-
+    $group = $this->objectHandlerService->setObjectData($group, $data);
     $this->entityManager->persist($group);
     $this->entityManager->flush();
 
@@ -108,22 +123,12 @@ class GroupService
   {
     $group = $this->getGroup($id);
 
-    foreach ($data as $key => $value) {
-      $method = 'set' . ucfirst($key);
-
-      if ($key == 'departmentId') {
-        $value = $this->departmentService->getDepartment($value);
-        $method = 'setDepartment';
-      }
-
-      if (!method_exists($group, $method)) {
-        continue;
-      }
-
-      $group->$method($value);
+    if (array_key_exists('departmentId', $data)) {
+      $department = $this->departmentService->getDepartment($data['departmentId']);
+      $data['department'] = $department;
     }
 
-    $this->requestCheckerService->validateRequestDataByConstraints($group);
+    $group = $this->objectHandlerService->setObjectData($group, $data);
     $this->entityManager->flush();
 
     return $group;

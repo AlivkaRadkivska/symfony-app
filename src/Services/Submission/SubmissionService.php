@@ -4,15 +4,26 @@ namespace App\Services\Submission;
 
 use App\Entity\Submission;
 use App\Services\RequestCheckerService;
+use App\Services\ObjectHandlerService;
 use App\Services\Task\TaskService;
 use App\Services\Student\StudentService;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class SubmissionService
 {
+  /**
+   * @var array
+   */
+  public const REQUIRED_SUBMISSION_FIELDS = [
+    'answer',
+    'obtainedGrade',
+    'doneDate',
+    'examId',
+    'studentId'
+  ];
+
   /**
    * @var EntityManagerInterface
    */
@@ -22,6 +33,11 @@ class SubmissionService
    * @var RequestCheckerService
    */
   private RequestCheckerService $requestCheckerService;
+
+  /**
+   * @var ObjectHandlerService
+   */
+  private ObjectHandlerService $objectHandlerService;
 
   /**
    * @var TaskService
@@ -36,15 +52,20 @@ class SubmissionService
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param RequestCheckerService $requestCheckerService
+   * @param TaskService $taskService
+   * @param StudentService $studentService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
+    ObjectHandlerService  $objectHandlerService,
     TaskService $taskService,
     StudentService $studentService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
+    $this->objectHandlerService = $objectHandlerService;
     $this->taskService = $taskService;
     $this->studentService = $studentService;
   }
@@ -88,20 +109,16 @@ class SubmissionService
    */
   public function createSubmission(array $data): Submission
   {
+    $this->requestCheckerService::check($data, self::REQUIRED_SUBMISSION_FIELDS);
     $submission = new Submission();
 
     $task = $this->taskService->getTask($data['taskId']);
+    $data['task'] = $task;
+
     $student = $this->studentService->getStudent($data['studentId']);
+    $data['student'] = $student;
 
-    $submission
-      ->setAnswer($data['answer'])
-      ->setObtainedGrade($data['obtainedGrade'])
-      ->setDoneDate(new DateTime($data['doneDate']))
-      ->setTask($task)
-      ->setStudent($student);
-
-    $this->requestCheckerService->validateRequestDataByConstraints($submission);
-
+    $submission = $this->objectHandlerService->setObjectData($submission, $data);
     $this->entityManager->persist($submission);
     $this->entityManager->flush();
 
@@ -119,31 +136,17 @@ class SubmissionService
   {
     $submission = $this->getSubmission($id);
 
-    foreach ($data as $key => $value) {
-      $method = 'set' . ucfirst($key);
-
-      if ($key == 'taskId') {
-        $value = $this->taskService->getTask($value);
-        $method = 'setTask';
-      }
-
-      if ($key == 'studentId') {
-        $value = $this->studentService->getStudent($value);
-        $method = 'setStudent';
-      }
-
-      if ($key == 'doneDate') {
-        $value = new DateTime($value);
-      }
-
-      if (!method_exists($submission, $method)) {
-        continue;
-      }
-
-      $submission->$method($value);
+    if (array_key_exists('taskId', $data)) {
+      $task = $this->taskService->getTask($data['taskId']);
+      $data['task'] = $task;
     }
 
-    $this->requestCheckerService->validateRequestDataByConstraints($submission);
+    if (array_key_exists('studentId', $data)) {
+      $student = $this->studentService->getStudent($data['studentId']);
+      $data['student'] = $student;
+    }
+
+    $submission = $this->objectHandlerService->setObjectData($submission, $data);
     $this->entityManager->flush();
 
     return $submission;

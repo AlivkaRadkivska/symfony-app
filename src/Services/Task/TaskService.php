@@ -5,13 +5,24 @@ namespace App\Services\Task;
 use App\Entity\Task;
 use App\Services\RequestCheckerService;
 use App\Services\Course\CourseService;
-use DateTime;
+use App\Services\ObjectHandlerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class TaskService
 {
+  /**
+   * @var array
+   */
+  public const REQUIRED_TASK_FIELDS = [
+    'title',
+    'description',
+    'maxGrade',
+    'type',
+    'dueDate',
+    'courseId'
+  ];
+
   /**
    * @var EntityManagerInterface
    */
@@ -23,6 +34,11 @@ class TaskService
   private RequestCheckerService $requestCheckerService;
 
   /**
+   * @var ObjectHandlerService
+   */
+  private ObjectHandlerService $objectHandlerService;
+
+  /**
    * @var CourseService
    */
   private CourseService $courseService;
@@ -30,14 +46,17 @@ class TaskService
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param ObjectHandlerService  $objectHandlerService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
+    ObjectHandlerService  $objectHandlerService,
     CourseService $courseService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
+    $this->objectHandlerService = $objectHandlerService;
     $this->courseService = $courseService;
   }
 
@@ -80,18 +99,13 @@ class TaskService
    */
   public function createTask(array $data): Task
   {
+    $this->requestCheckerService::check($data, self::REQUIRED_TASK_FIELDS);
     $task = new Task();
 
     $course = $this->courseService->getCourse($data['courseId']);
+    $data['course'] = $course;
 
-    $task
-      ->setTitle($data['title'])
-      ->setDescription($data['description'])
-      ->setMaxGrade($data['maxGrade'])
-      ->setDueDate(new DateTime($data['dueDate']))
-      ->setCourse($course);
-
-    $this->requestCheckerService->validateRequestDataByConstraints($task);
+    $task = $this->objectHandlerService->setObjectData($task, $data);
 
     $this->entityManager->persist($task);
     $this->entityManager->flush();
@@ -110,26 +124,12 @@ class TaskService
   {
     $task = $this->getTask($id);
 
-    foreach ($data as $key => $value) {
-      $method = 'set' . ucfirst($key);
-
-      if ($key == 'courseId') {
-        $value = $this->courseService->getCourse($value);
-        $method = 'setCourse';
-      }
-
-      if ($key == 'dueDate') {
-        $value = new DateTime($value);
-      }
-
-      if (!method_exists($task, $method)) {
-        continue;
-      }
-
-      $task->$method($value);
+    if (array_key_exists('courseId', $data)) {
+      $course = $this->courseService->getCourse($data['courseId']);
+      $data['course'] = $course;
     }
 
-    $this->requestCheckerService->validateRequestDataByConstraints($task);
+    $task = $this->objectHandlerService->setObjectData($task, $data);
     $this->entityManager->flush();
 
     return $task;
@@ -140,7 +140,6 @@ class TaskService
    *
    * @param  string $id
    * @return void
-   * @throws ConflictHttpException
    */
   public function deleteTask(string $id): void
   {

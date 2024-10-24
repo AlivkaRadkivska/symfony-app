@@ -3,8 +3,8 @@
 namespace App\Services\Course;
 
 use App\Entity\Course;
-use App\Entity\Student;
 use App\Services\RequestCheckerService;
+use App\Services\ObjectHandlerService;
 use App\Services\Teacher\TeacherService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -12,6 +12,16 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class CourseService
 {
+  /**
+   * @var array
+   */
+  public const REQUIRED_COURSE_FIELDS = [
+    'name',
+    'description',
+    'credits',
+    'teacherId'
+  ];
+
   /**
    * @var EntityManagerInterface
    */
@@ -23,6 +33,11 @@ class CourseService
   private RequestCheckerService $requestCheckerService;
 
   /**
+   * @var ObjectHandlerService
+   */
+  private ObjectHandlerService $objectHandlerService;
+
+  /**
    * @var TeacherService
    */
   private TeacherService $teacherService;
@@ -31,16 +46,18 @@ class CourseService
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param ObjectHandlerService $objectHandlerService
    * @param TeacherService $teacherService
-   * @param StudentService $studentService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
+    ObjectHandlerService $objectHandlerService,
     TeacherService $teacherService,
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
+    $this->objectHandlerService = $objectHandlerService;
     $this->teacherService = $teacherService;
   }
 
@@ -83,18 +100,13 @@ class CourseService
    */
   public function createCourse(array $data): Course
   {
+    $this->requestCheckerService::check($data, self::REQUIRED_COURSE_FIELDS);
     $course = new Course();
 
     $teacher = $this->teacherService->getTeacher($data['teacherId']);
+    $data['teacher'] = $teacher;
 
-    $course
-      ->setName($data['name'])
-      ->setDescription($data['description'])
-      ->setCredits($data['credits'])
-      ->setTeacher($teacher);
-
-    $this->requestCheckerService->validateRequestDataByConstraints($course);
-
+    $course = $this->objectHandlerService->setObjectData($course, $data);
     $this->entityManager->persist($course);
     $this->entityManager->flush();
 
@@ -112,22 +124,12 @@ class CourseService
   {
     $course = $this->getCourse($id);
 
-    foreach ($data as $key => $value) {
-      $method = 'set' . ucfirst($key);
-
-      if ($key == 'TeacherId') {
-        $value = $this->teacherService->getTeacher($value);
-        $method = 'setTeacher';
-      }
-
-      if (!method_exists($course, $method)) {
-        continue;
-      }
-
-      $course->$method($value);
+    if (array_key_exists('teacherId', $data)) {
+      $teacher = $this->teacherService->getTeacher($data['teacherId']);
+      $data['teacher'] = $teacher;
     }
 
-    $this->requestCheckerService->validateRequestDataByConstraints($course);
+    $course = $this->objectHandlerService->setObjectData($course, $data);
     $this->entityManager->flush();
 
     return $course;

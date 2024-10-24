@@ -4,14 +4,27 @@ namespace App\Services\Exam;
 
 use App\Entity\Exam;
 use App\Services\RequestCheckerService;
+use App\Services\ObjectHandlerService;
 use App\Services\Course\CourseService;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class ExamService
 {
+  /**
+   * @var array
+   */
+  public const REQUIRED_EXAM_FIELDS = [
+    'title',
+    'description',
+    'maxGrade',
+    'duration',
+    'type',
+    'startDate',
+    'courseId'
+  ];
+
   /**
    * @var EntityManagerInterface
    */
@@ -23,6 +36,11 @@ class ExamService
   private RequestCheckerService $requestCheckerService;
 
   /**
+   * @var ObjectHandlerService
+   */
+  private ObjectHandlerService $objectHandlerService;
+
+  /**
    * @var CourseService
    */
   private CourseService $courseService;
@@ -30,17 +48,20 @@ class ExamService
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param ObjectHandlerService $objectHandlerService
+   * @param RequestCheckerService $requestCheckerService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
+    ObjectHandlerService $objectHandlerService,
     CourseService $courseService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
+    $this->objectHandlerService = $objectHandlerService;
     $this->courseService = $courseService;
   }
-
 
   /**
    * getExams
@@ -80,20 +101,13 @@ class ExamService
    */
   public function createExam(array $data): Exam
   {
+    $this->requestCheckerService::check($data, self::REQUIRED_EXAM_FIELDS);
     $exam = new Exam();
 
     $course = $this->courseService->getCourse($data['courseId']);
+    $data['course'] = $course;
 
-    $exam
-      ->setTitle($data['title'])
-      ->setDescription($data['description'])
-      ->setDuration($data['duration'])
-      ->setMaxGrade($data['maxGrade'])
-      ->setStartDate(new DateTime($data['startDate']))
-      ->setCourse($course);
-
-    $this->requestCheckerService->validateRequestDataByConstraints($exam);
-
+    $exam = $this->objectHandlerService->setObjectData($exam, $data);
     $this->entityManager->persist($exam);
     $this->entityManager->flush();
 
@@ -111,26 +125,12 @@ class ExamService
   {
     $exam = $this->getExam($id);
 
-    foreach ($data as $key => $value) {
-      $method = 'set' . ucfirst($key);
-
-      if ($key == 'courseId') {
-        $value = $this->courseService->getCourse($value);
-        $method = 'setCourse';
-      }
-
-      if ($key == 'startDate') {
-        $value = new DateTime($value);
-      }
-
-      if (!method_exists($exam, $method)) {
-        continue;
-      }
-
-      $exam->$method($value);
+    if (array_key_exists('courseId', $data)) {
+      $course = $this->courseService->getCourse($data['courseId']);
+      $data['course'] = $course;
     }
 
-    $this->requestCheckerService->validateRequestDataByConstraints($exam);
+    $exam = $this->objectHandlerService->setObjectData($exam, $data);
     $this->entityManager->flush();
 
     return $exam;

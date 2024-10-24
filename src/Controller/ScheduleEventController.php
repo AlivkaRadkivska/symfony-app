@@ -8,44 +8,24 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Services\RequestCheckerService;
 
 #[Route('/scheduleEvent', name: 'schedule_event_routes')]
 class ScheduleEventController extends AbstractController
 {
-    /**
-     * @var RequestCheckerService
-     */
-    private RequestCheckerService $requestChecker;
-
     /**
      * @var ScheduleEventService
      */
     private ScheduleEventService $scheduleEventService;
 
     /**
-     * @var array
-     */
-    public const REQUIRED_SCHEDULE_EVENT_FIELDS = [
-        'meetingLink',
-        'startDate',
-        'endDate',
-        'courseId',
-        'groupId'
-    ];
-
-    /**
      * __construct
      *
-     * @param  RequestCheckerService $requestChecker
      * @param  ScheduleEventService $ScheduleEventService
      * @return void
      */
     public function __construct(
-        RequestCheckerService $requestChecker,
         ScheduleEventService $scheduleEventService
     ) {
-        $this->requestChecker = $requestChecker;
         $this->scheduleEventService = $scheduleEventService;
     }
 
@@ -71,7 +51,6 @@ class ScheduleEventController extends AbstractController
     public function addScheduleEvent(Request $request): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true);
-        $this->requestChecker::check($requestData, self::REQUIRED_SCHEDULE_EVENT_FIELDS);
 
         $scheduleEvent = $this->scheduleEventService->createScheduleEvent($requestData);
         return new JsonResponse($scheduleEvent, Response::HTTP_OK);

@@ -8,43 +8,23 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Services\RequestCheckerService;
 
-#[Route('/examResult', name: 'examResult_routes')]
+#[Route('/examResult', name: 'exam_result_routes')]
 class ExamResultController extends AbstractController
 {
-    /**
-     * @var RequestCheckerService
-     */
-    private RequestCheckerService $requestChecker;
-
     /**
      * @var ExamResultService
      */
     private ExamResultService $examResultService;
 
     /**
-     * @var array
-     */
-    public const REQUIRED_EXAM_RESULT_FIELDS = [
-        'answer',
-        'obtainedGrade',
-        'examId',
-        'studentId'
-    ];
-
-    /**
      * __construct
      *
-     * @param  RequestCheckerService $requestChecker
      * @param  ExamResultService $ExamResultService
-     * @return void
      */
     public function __construct(
-        RequestCheckerService $requestChecker,
         ExamResultService $examResultService
     ) {
-        $this->requestChecker = $requestChecker;
         $this->examResultService = $examResultService;
     }
 
@@ -70,7 +50,6 @@ class ExamResultController extends AbstractController
     public function addExamResult(Request $request): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true);
-        $this->requestChecker::check($requestData, self::REQUIRED_EXAM_RESULT_FIELDS);
 
         $examResult = $this->examResultService->createExamResult($requestData);
         return new JsonResponse($examResult, Response::HTTP_OK);

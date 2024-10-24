@@ -8,46 +8,23 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Services\RequestCheckerService;
 
 #[Route('/exam', name: 'exam_routes')]
 class ExamController extends AbstractController
 {
-    /**
-     * @var RequestCheckerService
-     */
-    private RequestCheckerService $requestChecker;
-
     /**
      * @var ExamService
      */
     private ExamService $examService;
 
     /**
-     * @var array
-     */
-    public const REQUIRED_EXAM_FIELDS = [
-        'title',
-        'description',
-        'maxGrade',
-        'duration',
-        'type',
-        'startDate',
-        'courseId'
-    ];
-
-    /**
      * __construct
      *
-     * @param  RequestCheckerService $requestChecker
      * @param  ExamService $ExamService
-     * @return void
      */
     public function __construct(
-        RequestCheckerService $requestChecker,
         ExamService $examService
     ) {
-        $this->requestChecker = $requestChecker;
         $this->examService = $examService;
     }
 
@@ -73,7 +50,6 @@ class ExamController extends AbstractController
     public function addExam(Request $request): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true);
-        $this->requestChecker::check($requestData, self::REQUIRED_EXAM_FIELDS);
 
         $exam = $this->examService->createExam($requestData);
         return new JsonResponse($exam, Response::HTTP_OK);

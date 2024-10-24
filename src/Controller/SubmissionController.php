@@ -8,44 +8,24 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Services\RequestCheckerService;
 
 #[Route('/submission', name: 'submission_routes')]
 class SubmissionController extends AbstractController
 {
     /**
-     * @var RequestCheckerService
-     */
-    private RequestCheckerService $requestChecker;
-
-    /**
      * @var SubmissionService
      */
     private SubmissionService $submissionService;
 
-    /**
-     * @var array
-     */
-    public const REQUIRED_SUBMISSION_FIELDS = [
-        'answer',
-        'obtainedGrade',
-        'doneDate',
-        'examId',
-        'studentId'
-    ];
 
     /**
      * __construct
      *
-     * @param  RequestCheckerService $requestChecker
      * @param  SubmissionService $SubmissionService
-     * @return void
      */
     public function __construct(
-        RequestCheckerService $requestChecker,
         SubmissionService $submissionService
     ) {
-        $this->requestChecker = $requestChecker;
         $this->submissionService = $submissionService;
     }
 
@@ -71,7 +51,6 @@ class SubmissionController extends AbstractController
     public function addSubmission(Request $request): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true);
-        $this->requestChecker::check($requestData, self::REQUIRED_SUBMISSION_FIELDS);
 
         $submission = $this->submissionService->createSubmission($requestData);
         return new JsonResponse($submission, Response::HTTP_OK);

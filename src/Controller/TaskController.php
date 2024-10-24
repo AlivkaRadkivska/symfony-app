@@ -8,45 +8,23 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Services\RequestCheckerService;
 
 #[Route('/task', name: 'task_routes')]
 class TaskController extends AbstractController
 {
-    /**
-     * @var RequestCheckerService
-     */
-    private RequestCheckerService $requestChecker;
-
     /**
      * @var TaskService
      */
     private TaskService $taskService;
 
     /**
-     * @var array
-     */
-    public const REQUIRED_TASK_FIELDS = [
-        'title',
-        'description',
-        'maxGrade',
-        'type',
-        'dueDate',
-        'courseId'
-    ];
-
-    /**
      * __construct
      *
-     * @param  RequestCheckerService $requestChecker
      * @param  TaskService $taskService
-     * @return void
      */
     public function __construct(
-        RequestCheckerService $requestChecker,
         TaskService $taskService
     ) {
-        $this->requestChecker = $requestChecker;
         $this->taskService = $taskService;
     }
 
@@ -72,7 +50,6 @@ class TaskController extends AbstractController
     public function addTask(Request $request): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true);
-        $this->requestChecker::check($requestData, self::REQUIRED_TASK_FIELDS);
 
         $task = $this->taskService->createTask($requestData);
         return new JsonResponse($task, Response::HTTP_OK);

@@ -8,44 +8,23 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Services\RequestCheckerService;
 
 #[Route('/student', name: 'student_routes')]
 class StudentController extends AbstractController
 {
-    /**
-     * @var RequestCheckerService
-     */
-    private RequestCheckerService $requestChecker;
-
     /**
      * @var StudentService
      */
     private StudentService $studentService;
 
     /**
-     * @var array
-     */
-    public const REQUIRED_STUDENT_FIELDS = [
-        'email',
-        'password',
-        'firstName',
-        'lastName',
-        'groupId'
-    ];
-
-    /**
      * __construct
      *
-     * @param  RequestCheckerService $requestChecker 
      * @param  StudentService $studentService 
-     * @return void
      */
     public function __construct(
-        RequestCheckerService $requestChecker,
         StudentService $studentService
     ) {
-        $this->requestChecker = $requestChecker;
         $this->studentService = $studentService;
     }
 
@@ -71,10 +50,8 @@ class StudentController extends AbstractController
     public function addStudent(Request $request): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true);
-        $this->requestChecker::check($requestData, self::REQUIRED_STUDENT_FIELDS);
 
         $student = $this->studentService->createStudent($requestData);
-
 
         return new JsonResponse($student, Response::HTTP_OK);
     }

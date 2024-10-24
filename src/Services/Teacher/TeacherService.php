@@ -4,12 +4,25 @@ namespace App\Services\Teacher;
 
 use App\Entity\Teacher;
 use App\Services\RequestCheckerService;
+use App\Services\ObjectHandlerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Services\Department\DepartmentService;
 
 class TeacherService
 {
+  /**
+   * @var array
+   */
+  public const REQUIRED_TEACHER_FIELDS = [
+    'email',
+    'password',
+    'firstName',
+    'lastName',
+    'position',
+    'departmentId'
+  ];
+
   /**
    * @var EntityManagerInterface
    */
@@ -26,17 +39,25 @@ class TeacherService
   private DepartmentService $departmentService;
 
   /**
+   * @var ObjectHandlerService
+   */
+  private ObjectHandlerService $objectHandlerService;
+
+  /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param ObjectHandlerService  $objectHandlerService
    * @param DepartmentService $departmentService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
+    ObjectHandlerService  $objectHandlerService,
     DepartmentService $departmentService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
+    $this->objectHandlerService = $objectHandlerService;
     $this->departmentService = $departmentService;
   }
 
@@ -79,20 +100,15 @@ class TeacherService
    */
   public function createTeacher(array $data): Teacher
   {
+    $this->requestCheckerService::check($data, self::REQUIRED_TEACHER_FIELDS);
     $teacher = new Teacher();
 
     $department = $this->departmentService->getDepartment($data['departmentId']);
-    $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
+    $data['department'] = $department;
 
-    $teacher
-      ->setEmail($data['email'])
-      ->setFirstName($data['firstName'])
-      ->setLastName($data['lastName'])
-      ->setPosition($data['position'])
-      ->setDepartment($department)
-      ->setPassword($hashedPassword);
+    $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
 
-    $this->requestCheckerService->validateRequestDataByConstraints($teacher);
+    $teacher = $this->objectHandlerService->setObjectData($teacher, $data);
 
     $this->entityManager->persist($teacher);
     $this->entityManager->flush();
@@ -111,22 +127,16 @@ class TeacherService
   {
     $teacher = $this->getTeacher($id);
 
-    foreach ($data as $key => $value) {
-      $method = 'set' . ucfirst($key);
-
-      if ($key == 'departmentId') {
-        $value = $this->departmentService->getDepartment($value);
-        $method = 'setDepartment';
-      }
-
-      if (!method_exists($teacher, $method)) {
-        continue;
-      }
-
-      $teacher->$method($value);
+    if (array_key_exists('departmentId', $data)) {
+      $department = $this->departmentService->getDepartment($data['departmentId']);
+      $data['department'] = $department;
     }
 
-    $this->requestCheckerService->validateRequestDataByConstraints($teacher);
+    if (array_key_exists('password', $data)) {
+      $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+    }
+
+    $teacher = $this->objectHandlerService->setObjectData($teacher, $data);
     $this->entityManager->flush();
 
     return $teacher;

@@ -8,41 +8,23 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Services\RequestCheckerService;
 
 #[Route('/department', name: 'department_routes')]
 class DepartmentController extends AbstractController
 {
-    /**
-     * @var RequestCheckerService
-     */
-    private RequestCheckerService $requestChecker;
-
     /**
      * @var DepartmentService
      */
     private DepartmentService $departmentService;
 
     /**
-     * @var array
-     */
-    public const REQUIRED_DEPARTMENT_FIELDS = [
-        'name',
-        'faculty'
-    ];
-
-    /**
      * __construct
      *
-     * @param  RequestCheckerService $requestChecker
      * @param  DepartmentService $departmentService
-     * @return void
      */
     public function __construct(
-        RequestCheckerService $requestChecker,
         DepartmentService $departmentService
     ) {
-        $this->requestChecker = $requestChecker;
         $this->departmentService = $departmentService;
     }
 
@@ -68,7 +50,6 @@ class DepartmentController extends AbstractController
     public function addDepartment(Request $request): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true);
-        $this->requestChecker::check($requestData, self::REQUIRED_DEPARTMENT_FIELDS);
 
         $department = $this->departmentService->createDepartment($requestData);
 

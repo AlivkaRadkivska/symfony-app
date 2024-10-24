@@ -21,7 +21,7 @@ class Submission implements JsonSerializable
     #[ORM\Column]
     private ?int $obtainedGrade = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $doneDate = null;
 
     #[ORM\ManyToOne(targetEntity: Task::class, inversedBy: 'submissions')]

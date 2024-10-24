@@ -32,7 +32,7 @@ class Exam implements JsonSerializable
     #[ORM\Column(length: 255)]
     private ?string $type = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\ManyToOne(targetEntity: Course::class, inversedBy: 'exams')]

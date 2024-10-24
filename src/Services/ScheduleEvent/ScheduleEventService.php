@@ -4,15 +4,26 @@ namespace App\Services\ScheduleEvent;
 
 use App\Entity\ScheduleEvent;
 use App\Services\RequestCheckerService;
+use App\Services\ObjectHandlerService;
 use App\Services\Course\CourseService;
 use App\Services\Group\GroupService;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class ScheduleEventService
 {
+  /**
+   * @var array
+   */
+  public const REQUIRED_SCHEDULE_EVENT_FIELDS = [
+    'meetingLink',
+    'startDate',
+    'endDate',
+    'courseId',
+    'groupId'
+  ];
+
   /**
    * @var EntityManagerInterface
    */
@@ -22,6 +33,11 @@ class ScheduleEventService
    * @var RequestCheckerService
    */
   private RequestCheckerService $requestCheckerService;
+
+  /**
+   * @var ObjectHandlerService
+   */
+  private ObjectHandlerService $objectHandlerService;
 
   /**
    * @var CourseService
@@ -36,15 +52,20 @@ class ScheduleEventService
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param ObjectHandlerService  $objectHandlerService
+   * @param CourseService $courseService
+   * @param GroupService $groupService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
+    ObjectHandlerService  $objectHandlerService,
     CourseService $courseService,
     GroupService $groupService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
+    $this->objectHandlerService = $objectHandlerService;
     $this->courseService = $courseService;
     $this->groupService = $groupService;
   }
@@ -88,20 +109,16 @@ class ScheduleEventService
    */
   public function createScheduleEvent(array $data): ScheduleEvent
   {
+    $this->requestCheckerService::check($data, self::REQUIRED_SCHEDULE_EVENT_FIELDS);
     $scheduleEvent = new ScheduleEvent();
 
     $course = $this->courseService->getCourse($data['courseId']);
+    $data['course'] = $course;
+
     $group = $this->groupService->getGroup($data['groupId']);
+    $data['group'] = $group;
 
-    $scheduleEvent
-      ->setStartDate(new DateTime($data['startDate']))
-      ->setEndDate(new DateTime($data['endDate']))
-      ->setMeetingLink($data['meetingLink'])
-      ->setCourse($course)
-      ->setGroup($group);
-
-    $this->requestCheckerService->validateRequestDataByConstraints($scheduleEvent);
-
+    $scheduleEvent = $this->objectHandlerService->setObjectData($scheduleEvent, $data);
     $this->entityManager->persist($scheduleEvent);
     $this->entityManager->flush();
 
@@ -119,30 +136,17 @@ class ScheduleEventService
   {
     $scheduleEvent = $this->getScheduleEvent($id);
 
-    foreach ($data as $key => $value) {
-      $method = 'set' . ucfirst($key);
-
-      if ($key == 'courseId') {
-        $value = $this->courseService->getCourse($value);
-        $method = 'setCourse';
-      }
-
-      if ($key == 'groupId') {
-        $value = $this->groupService->getGroup($value);
-        $method = 'setGroup';
-      }
-      if ($key == 'startDate' || $key == 'endDate') {
-        $value = new DateTime($value);
-      }
-
-      if (!method_exists($scheduleEvent, $method)) {
-        continue;
-      }
-
-      $scheduleEvent->$method($value);
+    if (array_key_exists('courseId', $data)) {
+      $course = $this->courseService->getCourse($data['courseId']);
+      $data['course'] = $course;
     }
 
-    $this->requestCheckerService->validateRequestDataByConstraints($scheduleEvent);
+    if (array_key_exists('groupId', $data)) {
+      $group = $this->groupService->getGroup($data['groupId']);
+      $data['group'] = $group;
+    }
+
+    $scheduleEvent = $this->objectHandlerService->setObjectData($scheduleEvent, $data);
     $this->entityManager->flush();
 
     return $scheduleEvent;

@@ -8,43 +8,23 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Services\RequestCheckerService;
 
 #[Route('/group', name: 'group_routes')]
 class GroupController extends AbstractController
 {
-    /**
-     * @var RequestCheckerService
-     */
-    private RequestCheckerService $requestChecker;
-
     /**
      * @var GroupService
      */
     private GroupService $groupService;
 
     /**
-     * @var array
-     */
-    public const REQUIRED_GROUP_FIELDS = [
-        'name',
-        'major',
-        'year',
-        'departmentId'
-    ];
-
-    /**
      * __construct
      *
-     * @param  RequestCheckerService $requestChecker
      * @param  GroupService $groupService
-     * @return void
      */
     public function __construct(
-        RequestCheckerService $requestChecker,
         GroupService $groupService
     ) {
-        $this->requestChecker = $requestChecker;
         $this->groupService = $groupService;
     }
 
@@ -70,7 +50,6 @@ class GroupController extends AbstractController
     public function addGroup(Request $request): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true);
-        $this->requestChecker::check($requestData, self::REQUIRED_GROUP_FIELDS);
 
         $group = $this->groupService->createGroup($requestData);
 

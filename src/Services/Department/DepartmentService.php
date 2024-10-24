@@ -4,12 +4,21 @@ namespace App\Services\Department;
 
 use App\Entity\Department;
 use App\Services\RequestCheckerService;
+use App\Services\ObjectHandlerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class DepartmentService
 {
+  /**
+   * @var array
+   */
+  public const REQUIRED_DEPARTMENT_FIELDS = [
+    'name',
+    'faculty'
+  ];
+
   /**
    * @var EntityManagerInterface
    */
@@ -21,15 +30,23 @@ class DepartmentService
   private RequestCheckerService $requestCheckerService;
 
   /**
+   * @var ObjectHandlerService
+   */
+  private ObjectHandlerService $objectHandlerService;
+
+  /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param ObjectHandlerService $objectHandlerService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
+    ObjectHandlerService $objectHandlerService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
+    $this->objectHandlerService = $objectHandlerService;
   }
 
 
@@ -71,12 +88,10 @@ class DepartmentService
    */
   public function createDepartment(array $data): Department
   {
+    $this->requestCheckerService::check($data, self::REQUIRED_DEPARTMENT_FIELDS);
     $department = new Department();
 
-    $department->setName($data['name'])->setFaculty($data['faculty']);
-
-    $this->requestCheckerService->validateRequestDataByConstraints($department);
-
+    $department = $this->objectHandlerService->setObjectData($department, $data);
     $this->entityManager->persist($department);
     $this->entityManager->flush();
 
@@ -94,17 +109,7 @@ class DepartmentService
   {
     $department = $this->getDepartment($id);
 
-    foreach ($data as $key => $value) {
-      $method = 'set' . ucfirst($key);
-
-      if (!method_exists($department, $method)) {
-        continue;
-      }
-
-      $department->$method($value);
-    }
-
-    $this->requestCheckerService->validateRequestDataByConstraints($department);
+    $department = $this->objectHandlerService->setObjectData($department, $data);
     $this->entityManager->flush();
 
     return $department;

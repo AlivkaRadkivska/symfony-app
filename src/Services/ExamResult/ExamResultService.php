@@ -4,6 +4,7 @@ namespace App\Services\ExamResult;
 
 use App\Entity\ExamResult;
 use App\Services\RequestCheckerService;
+use App\Services\ObjectHandlerService;
 use App\Services\Exam\ExamService;
 use App\Services\Student\StudentService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,6 +14,16 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 class ExamResultService
 {
   /**
+   * @var array
+   */
+  public const REQUIRED_EXAM_RESULT_FIELDS = [
+    'answer',
+    'obtainedGrade',
+    'examId',
+    'studentId'
+  ];
+
+  /**
    * @var EntityManagerInterface
    */
   private EntityManagerInterface $entityManager;
@@ -21,6 +32,11 @@ class ExamResultService
    * @var RequestCheckerService
    */
   private RequestCheckerService $requestCheckerService;
+
+  /**
+   * @var ObjectHandlerService
+   */
+  private ObjectHandlerService $objectHandlerService;
 
   /**
    * @var ExamService
@@ -35,19 +51,23 @@ class ExamResultService
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param ObjectHandlerService $objectHandlerService
+   * @param ExamService $examService
+   * @param StudentService $studentService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
+    ObjectHandlerService $objectHandlerService,
     ExamService $examService,
     StudentService $studentService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
+    $this->objectHandlerService = $objectHandlerService;
     $this->examService = $examService;
     $this->studentService = $studentService;
   }
-
 
   /**
    * getExamResults
@@ -87,19 +107,16 @@ class ExamResultService
    */
   public function createExamResult(array $data): ExamResult
   {
+    $this->requestCheckerService::check($data, self::REQUIRED_EXAM_RESULT_FIELDS);
     $examResult = new ExamResult();
 
     $exam = $this->examService->getExam($data['examId']);
+    $data['exam'] = $exam;
+
     $student = $this->studentService->getStudent($data['studentId']);
+    $data['student'] = $student;
 
-    $examResult
-      ->setAnswer($data['answer'])
-      ->setObtainedGrade($data['obtainedGrade'])
-      ->setExam($exam)
-      ->setStudent($student);
-
-    $this->requestCheckerService->validateRequestDataByConstraints($examResult);
-
+    $examResult = $this->objectHandlerService->setObjectData($examResult, $data);
     $this->entityManager->persist($examResult);
     $this->entityManager->flush();
 
@@ -117,27 +134,17 @@ class ExamResultService
   {
     $examResult = $this->getExamResult($id);
 
-    foreach ($data as $key => $value) {
-      $method = 'set' . ucfirst($key);
-
-      if ($key == 'examId') {
-        $value = $this->examService->getExam($value);
-        $method = 'setExam';
-      }
-
-      if ($key == 'studentId') {
-        $value = $this->studentService->getStudent($value);
-        $method = 'setStudent';
-      }
-
-      if (!method_exists($examResult, $method)) {
-        continue;
-      }
-
-      $examResult->$method($value);
+    if (array_key_exists('examId', $data)) {
+      $exam = $this->examService->getExam($data['examId']);
+      $data['exam'] = $exam;
     }
 
-    $this->requestCheckerService->validateRequestDataByConstraints($examResult);
+    if (array_key_exists('studentId', $data)) {
+      $student = $this->studentService->getStudent($data['studentId']);
+      $data['student'] = $student;
+    }
+
+    $examResult = $this->objectHandlerService->setObjectData($examResult, $data);
     $this->entityManager->flush();
 
     return $examResult;

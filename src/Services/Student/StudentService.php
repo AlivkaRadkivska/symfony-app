@@ -4,6 +4,7 @@ namespace App\Services\Student;
 
 use App\Entity\Student;
 use App\Services\RequestCheckerService;
+use App\Services\ObjectHandlerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Services\Group\GroupService;
@@ -11,6 +12,17 @@ use App\Services\Course\CourseService;
 
 class StudentService
 {
+  /**
+   * @var array
+   */
+  public const REQUIRED_STUDENT_FIELDS = [
+    'email',
+    'password',
+    'firstName',
+    'lastName',
+    'groupId'
+  ];
+
   /**
    * @var EntityManagerInterface
    */
@@ -20,6 +32,11 @@ class StudentService
    * @var RequestCheckerService
    */
   private RequestCheckerService $requestCheckerService;
+
+  /**
+   * @var ObjectHandlerService
+   */
+  private ObjectHandlerService $objectHandlerService;
 
   /**
    * @var GroupService
@@ -34,17 +51,20 @@ class StudentService
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
+   * @param ObjectHandlerService  $objectHandlerService
    * @param GroupService $groupService
    * @param CourseService $courseService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
+    ObjectHandlerService  $objectHandlerService,
     GroupService $groupService,
     CourseService $courseService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
+    $this->objectHandlerService = $objectHandlerService;
     $this->groupService = $groupService;
     $this->courseService = $courseService;
   }
@@ -88,20 +108,15 @@ class StudentService
    */
   public function createStudent(array $data): Student
   {
+    $this->requestCheckerService::check($data, self::REQUIRED_STUDENT_FIELDS);
     $student = new Student();
 
     $group = $this->groupService->getGroup($data['groupId']);
-    $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
+    $data['group'] = $group;
 
-    $student
-      ->setEmail($data['email'])
-      ->setFirstName($data['firstName'])
-      ->setLastName($data['lastName'])
-      ->setGroup($group)
-      ->setPassword($hashedPassword);
+    $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
 
-    $this->requestCheckerService->validateRequestDataByConstraints($student);
-
+    $student = $this->objectHandlerService->setObjectData($student, $data);
     $this->entityManager->persist($student);
     $this->entityManager->flush();
 
@@ -119,22 +134,16 @@ class StudentService
   {
     $student = $this->getStudent($id);
 
-    foreach ($data as $key => $value) {
-      $method = 'set' . ucfirst($key);
-
-      if ($key == 'GroupId') {
-        $value = $this->groupService->getGroup($value);
-        $method = 'setGroup';
-      }
-
-      if (!method_exists($student, $method)) {
-        continue;
-      }
-
-      $student->$method($value);
+    if (array_key_exists('groupId', $data)) {
+      $group = $this->groupService->getGroup($data['groupId']);
+      $data['group'] = $group;
     }
 
-    $this->requestCheckerService->validateRequestDataByConstraints($student);
+    if (array_key_exists('password', $data)) {
+      $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+    }
+
+    $student = $this->objectHandlerService->setObjectData($student, $data);
     $this->entityManager->flush();
 
     return $student;
