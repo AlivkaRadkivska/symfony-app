@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/examResult', name: 'exam_result_routes')]
+#[Route('/exam-result', name: 'exam_result_routes')]
 class ExamResultController extends AbstractController
 {
     /**

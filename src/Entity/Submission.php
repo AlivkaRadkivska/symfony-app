@@ -166,7 +166,7 @@ class Submission implements JsonSerializable
             "id" => $this->id,
             "answer" => $this->answer,
             "obtainedGrade" => $this->obtainedGrade,
-            "doneDate" => $this->doneDate,
+            "doneDate" => $this->doneDate->format('Y:m:d H:m'),
             "task" => [
                 "id" => $this->task?->getId(),
                 "title" => $this->task?->getTitle(),

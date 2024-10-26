@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/scheduleEvent', name: 'schedule_event_routes')]
+#[Route('/schedule-event', name: 'schedule_event_routes')]
 class ScheduleEventController extends AbstractController
 {
     /**
@@ -34,7 +34,7 @@ class ScheduleEventController extends AbstractController
      *
      * @return JsonResponse
      */
-    #[Route('/', name: 'get_schedule_event')]
+    #[Route('/', name: 'get_schedule_events')]
     public function getScheduleEvents(): JsonResponse
     {
         $scheduleEvents = $this->scheduleEventService->getScheduleEvents();

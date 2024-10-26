@@ -34,7 +34,7 @@ class SubmissionController extends AbstractController
      *
      * @return JsonResponse
      */
-    #[Route('/', name: 'get_submission')]
+    #[Route('/', name: 'get_submissions')]
     public function getSubmissions(): JsonResponse
     {
         $submissions = $this->submissionService->getSubmissions();

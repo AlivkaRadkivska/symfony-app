@@ -5,9 +5,10 @@ namespace App\Entity;
 use App\Repository\ScheduleEventRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use JsonSerializable;
 
 #[ORM\Entity(repositoryClass: ScheduleEventRepository::class)]
-class ScheduleEvent
+class ScheduleEvent implements JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -94,5 +95,28 @@ class ScheduleEvent
         $this->group = $group;
 
         return $this;
+    }
+
+    /**
+     * jsonSerialize
+     *
+     * @return mixed
+     */
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'id' => $this->id,
+            'meetingLink' => $this->meetingLink,
+            'startDate' => $this->startDate->format('Y-m-d H:m'),
+            'endDate' => $this->startDate->format('Y-m-d H:m'),
+            'course' => [
+                'id' => $this->course?->getId(),
+                'name' => $this->course?->getName(),
+            ],
+            'group' => [
+                'id' => $this->group?->getId(),
+                'name' => $this->group?->getName(),
+            ],
+        ];
     }
 }
