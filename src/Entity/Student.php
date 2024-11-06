@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: StudentRepository::class)]
 class Student implements JsonSerializable
@@ -17,19 +18,28 @@ class Student implements JsonSerializable
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Assert\NotNull]
+    #[Assert\Email]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\Length(min: 2)]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\Length(min: 2)]
     private ?string $lastName = null;
 
     #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'students')]
     #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id', onDelete: 'restrict')]
+    #[Assert\NotNull]
     private ?Group $group = null;
 
     #[ORM\ManyToMany(targetEntity: Course::class, inversedBy: 'students')]
