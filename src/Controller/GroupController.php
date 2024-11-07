@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Services\Group\GroupService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,14 +19,21 @@ class GroupController extends AbstractController
     private GroupService $groupService;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
      * __construct
      *
      * @param  GroupService $groupService
      */
     public function __construct(
-        GroupService $groupService
+        GroupService $groupService,
+        EntityManagerInterface $entityManager
     ) {
         $this->groupService = $groupService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -52,6 +60,7 @@ class GroupController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $group = $this->groupService->createGroup($requestData);
+        $this->entityManager->flush();
 
         return new JsonResponse($group, Response::HTTP_OK);
     }
@@ -79,6 +88,7 @@ class GroupController extends AbstractController
     public function deleteGroup(string $id): JsonResponse
     {
         $this->groupService->deleteGroup($id);
+        $this->entityManager->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
@@ -96,6 +106,7 @@ class GroupController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $group = $this->groupService->updateGroup($id, $requestData);
+        $this->entityManager->flush();
 
         return new JsonResponse($group, Response::HTTP_OK);
     }

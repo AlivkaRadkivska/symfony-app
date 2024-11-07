@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Services\ExamResult\ExamResultService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,14 +19,21 @@ class ExamResultController extends AbstractController
     private ExamResultService $examResultService;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
      * __construct
      *
      * @param  ExamResultService $ExamResultService
      */
     public function __construct(
-        ExamResultService $examResultService
+        ExamResultService $examResultService,
+        EntityManagerInterface $entityManager
     ) {
         $this->examResultService = $examResultService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -52,6 +60,8 @@ class ExamResultController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $examResult = $this->examResultService->createExamResult($requestData);
+        $this->entityManager->flush();
+
         return new JsonResponse($examResult, Response::HTTP_OK);
     }
 
@@ -78,6 +88,8 @@ class ExamResultController extends AbstractController
     public function deleteExamResult(string $id): JsonResponse
     {
         $this->examResultService->deleteExamResult($id);
+        $this->entityManager->flush();
+
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
@@ -94,6 +106,8 @@ class ExamResultController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $examResult = $this->examResultService->updateExamResult($id, $requestData);
+        $this->entityManager->flush();
+
         return new JsonResponse($examResult, Response::HTTP_OK);
     }
 }

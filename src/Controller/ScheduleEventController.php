@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Services\ScheduleEvent\ScheduleEventService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,15 +19,22 @@ class ScheduleEventController extends AbstractController
     private ScheduleEventService $scheduleEventService;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
      * __construct
      *
      * @param  ScheduleEventService $ScheduleEventService
      * @return void
      */
     public function __construct(
-        ScheduleEventService $scheduleEventService
+        ScheduleEventService $scheduleEventService,
+        EntityManagerInterface $entityManager
     ) {
         $this->scheduleEventService = $scheduleEventService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -53,6 +61,8 @@ class ScheduleEventController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $scheduleEvent = $this->scheduleEventService->createScheduleEvent($requestData);
+        $this->entityManager->flush();
+
         return new JsonResponse($scheduleEvent, Response::HTTP_OK);
     }
 
@@ -79,6 +89,8 @@ class ScheduleEventController extends AbstractController
     public function deleteScheduleEvent(string $id): JsonResponse
     {
         $this->scheduleEventService->deleteScheduleEvent($id);
+        $this->entityManager->flush();
+
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
@@ -95,6 +107,8 @@ class ScheduleEventController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $scheduleEvent = $this->scheduleEventService->updateScheduleEvent($id, $requestData);
+        $this->entityManager->flush();
+
         return new JsonResponse($scheduleEvent, Response::HTTP_OK);
     }
 }

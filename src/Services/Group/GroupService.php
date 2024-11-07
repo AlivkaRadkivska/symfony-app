@@ -107,7 +107,6 @@ class GroupService
 
     $group = $this->objectHandlerService->setObjectData($group, $data);
     $this->entityManager->persist($group);
-    $this->entityManager->flush();
 
     return $group;
   }
@@ -129,7 +128,6 @@ class GroupService
     }
 
     $group = $this->objectHandlerService->setObjectData($group, $data);
-    $this->entityManager->flush();
 
     return $group;
   }
@@ -150,6 +148,5 @@ class GroupService
     }
 
     $this->entityManager->remove($group);
-    $this->entityManager->flush();
   }
 }

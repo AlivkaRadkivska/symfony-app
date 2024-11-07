@@ -118,7 +118,6 @@ class StudentService
 
     $student = $this->objectHandlerService->setObjectData($student, $data);
     $this->entityManager->persist($student);
-    $this->entityManager->flush();
 
     return $student;
   }
@@ -144,7 +143,6 @@ class StudentService
     }
 
     $student = $this->objectHandlerService->setObjectData($student, $data);
-    $this->entityManager->flush();
 
     return $student;
   }
@@ -160,7 +158,6 @@ class StudentService
     $student = $this->getStudent($id);
 
     $this->entityManager->remove($student);
-    $this->entityManager->flush();
   }
 
   /**
@@ -176,7 +173,6 @@ class StudentService
     $course = $this->courseService->getCourse($courseId);
 
     $student->addCourse($course);
-    $this->entityManager->flush();
 
     return $student;
   }
@@ -195,7 +191,6 @@ class StudentService
     $course = $this->courseService->getCourse($courseId);
 
     $student->removeCourse($course);
-    $this->entityManager->flush();
 
     return $student;
   }

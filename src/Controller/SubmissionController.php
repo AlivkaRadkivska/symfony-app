@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Services\Submission\SubmissionService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +18,10 @@ class SubmissionController extends AbstractController
      */
     private SubmissionService $submissionService;
 
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
 
     /**
      * __construct
@@ -24,9 +29,11 @@ class SubmissionController extends AbstractController
      * @param  SubmissionService $SubmissionService
      */
     public function __construct(
-        SubmissionService $submissionService
+        SubmissionService $submissionService,
+        EntityManagerInterface $entityManager
     ) {
         $this->submissionService = $submissionService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -53,6 +60,8 @@ class SubmissionController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $submission = $this->submissionService->createSubmission($requestData);
+        $this->entityManager->flush();
+
         return new JsonResponse($submission, Response::HTTP_OK);
     }
 
@@ -79,6 +88,8 @@ class SubmissionController extends AbstractController
     public function deleteSubmission(string $id): JsonResponse
     {
         $this->submissionService->deleteSubmission($id);
+        $this->entityManager->flush();
+
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
@@ -95,6 +106,8 @@ class SubmissionController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $submission = $this->submissionService->updateSubmission($id, $requestData);
+        $this->entityManager->flush();
+
         return new JsonResponse($submission, Response::HTTP_OK);
     }
 }

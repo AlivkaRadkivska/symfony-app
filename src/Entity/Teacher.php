@@ -24,7 +24,7 @@ class Teacher implements JsonSerializable
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
-    #[Assert\Length(min: 4, max: 15)]
+    #[Assert\NotBlank]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]

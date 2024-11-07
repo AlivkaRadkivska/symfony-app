@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/course', name: 'course_routes')]
 class CourseController extends AbstractController
@@ -18,14 +19,21 @@ class CourseController extends AbstractController
     private CourseService $courseService;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
      * __construct
      *
      * @param  CourseService $courseService
      */
     public function __construct(
-        CourseService $courseService
+        CourseService $courseService,
+        EntityManagerInterface $entityManager
     ) {
         $this->courseService = $courseService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -50,7 +58,9 @@ class CourseController extends AbstractController
     public function addCourse(Request $request): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true);
+
         $course = $this->courseService->createCourse($requestData);
+        $this->entityManager->flush();
 
         return new JsonResponse($course, Response::HTTP_OK);
     }
@@ -65,6 +75,7 @@ class CourseController extends AbstractController
     public function deleteCourse(string $id): JsonResponse
     {
         $this->courseService->deleteCourse($id);
+        $this->entityManager->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
@@ -82,6 +93,7 @@ class CourseController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $course = $this->courseService->updateCourse($id, $requestData);
+        $this->entityManager->flush();
 
         return new JsonResponse($course, Response::HTTP_OK);
     }
