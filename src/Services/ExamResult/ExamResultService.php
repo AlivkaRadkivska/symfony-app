@@ -118,7 +118,6 @@ class ExamResultService
 
     $examResult = $this->objectHandlerService->setObjectData($examResult, $data);
     $this->entityManager->persist($examResult);
-    $this->entityManager->flush();
 
     return $examResult;
   }
@@ -145,7 +144,6 @@ class ExamResultService
     }
 
     $examResult = $this->objectHandlerService->setObjectData($examResult, $data);
-    $this->entityManager->flush();
 
     return $examResult;
   }
@@ -162,6 +160,5 @@ class ExamResultService
     $examResult = $this->getExamResult($id);
 
     $this->entityManager->remove($examResult);
-    $this->entityManager->flush();
   }
 }

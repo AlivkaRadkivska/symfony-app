@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/exam', name: 'exam_routes')]
 class ExamController extends AbstractController
@@ -18,14 +19,21 @@ class ExamController extends AbstractController
     private ExamService $examService;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
      * __construct
      *
      * @param  ExamService $ExamService
      */
     public function __construct(
-        ExamService $examService
+        ExamService $examService,
+        EntityManagerInterface $entityManager
     ) {
         $this->examService = $examService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -52,6 +60,8 @@ class ExamController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $exam = $this->examService->createExam($requestData);
+        $this->entityManager->flush();
+
         return new JsonResponse($exam, Response::HTTP_OK);
     }
 
@@ -78,6 +88,8 @@ class ExamController extends AbstractController
     public function deleteExam(string $id): JsonResponse
     {
         $this->examService->deleteExam($id);
+        $this->entityManager->flush();
+
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
@@ -94,6 +106,8 @@ class ExamController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $exam = $this->examService->updateExam($id, $requestData);
+        $this->entityManager->flush();
+
         return new JsonResponse($exam, Response::HTTP_OK);
     }
 }

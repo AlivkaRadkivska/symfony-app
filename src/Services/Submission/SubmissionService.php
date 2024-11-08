@@ -120,7 +120,6 @@ class SubmissionService
 
     $submission = $this->objectHandlerService->setObjectData($submission, $data);
     $this->entityManager->persist($submission);
-    $this->entityManager->flush();
 
     return $submission;
   }
@@ -147,7 +146,6 @@ class SubmissionService
     }
 
     $submission = $this->objectHandlerService->setObjectData($submission, $data);
-    $this->entityManager->flush();
 
     return $submission;
   }
@@ -164,6 +162,5 @@ class SubmissionService
     $submission = $this->getSubmission($id);
 
     $this->entityManager->remove($submission);
-    $this->entityManager->flush();
   }
 }

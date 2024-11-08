@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Services\Student\StudentService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,14 +19,21 @@ class StudentController extends AbstractController
     private StudentService $studentService;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
      * __construct
      *
      * @param  StudentService $studentService 
      */
     public function __construct(
-        StudentService $studentService
+        StudentService $studentService,
+        EntityManagerInterface $entityManager
     ) {
         $this->studentService = $studentService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -52,6 +60,7 @@ class StudentController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $student = $this->studentService->createStudent($requestData);
+        $this->entityManager->flush();
 
         return new JsonResponse($student, Response::HTTP_OK);
     }
@@ -79,6 +88,7 @@ class StudentController extends AbstractController
     public function deleteStudent(string $id): JsonResponse
     {
         $this->studentService->deleteStudent($id);
+        $this->entityManager->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
@@ -97,6 +107,7 @@ class StudentController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $student = $this->studentService->updateStudent($id, $requestData);
+        $this->entityManager->flush();
 
         return new JsonResponse($student, Response::HTTP_OK);
     }
@@ -112,6 +123,7 @@ class StudentController extends AbstractController
     public function joinCourse(string $id, string $courseId): JsonResponse
     {
         $student = $this->studentService->joinCourse($id, $courseId);
+        $this->entityManager->flush();
 
         return new JsonResponse($student, Response::HTTP_OK);
     }
@@ -127,6 +139,7 @@ class StudentController extends AbstractController
     public function leaveCourse(string $id, string $courseId): JsonResponse
     {
         $student = $this->studentService->leaveCourse($id, $courseId);
+        $this->entityManager->flush();
 
         return new JsonResponse($student, Response::HTTP_OK);
     }

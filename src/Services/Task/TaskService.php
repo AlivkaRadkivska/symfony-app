@@ -108,7 +108,6 @@ class TaskService
     $task = $this->objectHandlerService->setObjectData($task, $data);
 
     $this->entityManager->persist($task);
-    $this->entityManager->flush();
 
     return $task;
   }
@@ -130,7 +129,6 @@ class TaskService
     }
 
     $task = $this->objectHandlerService->setObjectData($task, $data);
-    $this->entityManager->flush();
 
     return $task;
   }
@@ -146,6 +144,5 @@ class TaskService
     $task = $this->getTask($id);
 
     $this->entityManager->remove($task);
-    $this->entityManager->flush();
   }
 }

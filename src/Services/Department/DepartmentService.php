@@ -93,7 +93,6 @@ class DepartmentService
 
     $department = $this->objectHandlerService->setObjectData($department, $data);
     $this->entityManager->persist($department);
-    $this->entityManager->flush();
 
     return $department;
   }
@@ -110,7 +109,6 @@ class DepartmentService
     $department = $this->getDepartment($id);
 
     $department = $this->objectHandlerService->setObjectData($department, $data);
-    $this->entityManager->flush();
 
     return $department;
   }
@@ -131,6 +129,5 @@ class DepartmentService
     }
 
     $this->entityManager->remove($department);
-    $this->entityManager->flush();
   }
 }

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Services\Teacher\TeacherService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,15 +19,22 @@ class TeacherController extends AbstractController
     private TeacherService $teacherService;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
      * __construct
      *
      * @param  TeacherService $teacherService 
      * @return void
      */
     public function __construct(
-        TeacherService $teacherService
+        TeacherService $teacherService,
+        EntityManagerInterface $entityManager
     ) {
         $this->teacherService = $teacherService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -53,6 +61,7 @@ class TeacherController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $teacher = $this->teacherService->createTeacher($requestData);
+        $this->entityManager->flush();
 
         return new JsonResponse($teacher, Response::HTTP_OK);
     }
@@ -80,6 +89,7 @@ class TeacherController extends AbstractController
     public function deleteTeacher(string $id): JsonResponse
     {
         $this->teacherService->deleteTeacher($id);
+        $this->entityManager->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
@@ -98,6 +108,7 @@ class TeacherController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $teacher = $this->teacherService->updateTeacher($id, $requestData);
+        $this->entityManager->flush();
 
         return new JsonResponse($teacher, Response::HTTP_OK);
     }

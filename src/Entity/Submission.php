@@ -6,6 +6,7 @@ use App\Repository\SubmissionRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SubmissionRepository::class)]
 class Submission implements JsonSerializable
@@ -16,20 +17,28 @@ class Submission implements JsonSerializable
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     private ?string $answer = null;
 
     #[ORM\Column]
+    #[Assert\NotNull]
+    #[Assert\Positive]
     private ?int $obtainedGrade = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull]
+    #[Assert\DateTime]
     private ?\DateTimeInterface $doneDate = null;
 
     #[ORM\ManyToOne(targetEntity: Task::class, inversedBy: 'submissions')]
     #[ORM\JoinColumn(name: 'task_id', referencedColumnName: 'id', onDelete: 'cascade')]
+    #[Assert\NotNull]
     private ?Task $task = null;
 
     #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'submissions')]
     #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id', onDelete: 'cascade')]
+    #[Assert\NotNull]
     private ?Student $student = null;
 
     /**

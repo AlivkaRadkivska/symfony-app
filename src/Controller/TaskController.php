@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Services\Task\TaskService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,14 +19,21 @@ class TaskController extends AbstractController
     private TaskService $taskService;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
      * __construct
      *
      * @param  TaskService $taskService
      */
     public function __construct(
-        TaskService $taskService
+        TaskService $taskService,
+        EntityManagerInterface $entityManager
     ) {
         $this->taskService = $taskService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -52,6 +60,8 @@ class TaskController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $task = $this->taskService->createTask($requestData);
+        $this->entityManager->flush();
+
         return new JsonResponse($task, Response::HTTP_OK);
     }
 
@@ -78,6 +88,8 @@ class TaskController extends AbstractController
     public function deleteTask(string $id): JsonResponse
     {
         $this->taskService->deleteTask($id);
+        $this->entityManager->flush();
+
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
@@ -94,6 +106,8 @@ class TaskController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $task = $this->taskService->updateTask($id, $requestData);
+        $this->entityManager->flush();
+
         return new JsonResponse($task, Response::HTTP_OK);
     }
 }

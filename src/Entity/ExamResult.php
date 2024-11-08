@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ExamResultRepository;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ExamResultRepository::class)]
 class ExamResult implements JsonSerializable
@@ -15,17 +16,22 @@ class ExamResult implements JsonSerializable
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     private ?string $answer = null;
 
     #[ORM\Column]
+    #[Assert\PositiveOrZero]
     private ?int $obtainedGrade = null;
 
     #[ORM\ManyToOne(targetEntity: Exam::class, inversedBy: 'examResults')]
     #[ORM\JoinColumn(name: 'exam_id', referencedColumnName: 'id', onDelete: 'cascade')]
+    #[Assert\NotNull]
     private ?Exam $exam = null;
 
     #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'examResults')]
     #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id', onDelete: 'cascade')]
+    #[Assert\NotNull]
     private ?Student $student = null;
 
     /**

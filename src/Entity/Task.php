@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 class Task implements JsonSerializable
@@ -18,22 +19,33 @@ class Task implements JsonSerializable
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\Length(min: 5)]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\Length(min: 10)]
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Assert\NotNull]
+    #[Assert\Positive()]
     private ?int $maxGrade = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     private ?string $type = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull]
+    #[Assert\DateTime]
     private ?\DateTimeInterface $dueDate = null;
 
     #[ORM\ManyToOne(targetEntity: Course::class, inversedBy: 'tasks')]
     #[ORM\JoinColumn(name: 'course_id', referencedColumnName: 'id', onDelete: 'cascade')]
+    #[Assert\NotNull]
     private ?Course $course = null;
 
     #[ORM\OneToMany(mappedBy: 'task', targetEntity: Submission::class)]

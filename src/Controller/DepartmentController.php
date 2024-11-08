@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/department', name: 'department_routes')]
 class DepartmentController extends AbstractController
@@ -18,14 +19,21 @@ class DepartmentController extends AbstractController
     private DepartmentService $departmentService;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
      * __construct
      *
      * @param  DepartmentService $departmentService
      */
     public function __construct(
-        DepartmentService $departmentService
+        DepartmentService $departmentService,
+        EntityManagerInterface $entityManager
     ) {
         $this->departmentService = $departmentService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -52,6 +60,7 @@ class DepartmentController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $department = $this->departmentService->createDepartment($requestData);
+        $this->entityManager->flush();
 
         return new JsonResponse($department, Response::HTTP_OK);
     }
@@ -66,6 +75,7 @@ class DepartmentController extends AbstractController
     public function deleteDepartment(string $id): JsonResponse
     {
         $this->departmentService->deleteDepartment($id);
+        $this->entityManager->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
@@ -83,6 +93,7 @@ class DepartmentController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $department = $this->departmentService->updateDepartment($id, $requestData);
+        $this->entityManager->flush();
 
         return new JsonResponse($department, Response::HTTP_OK);
     }

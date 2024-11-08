@@ -120,7 +120,6 @@ class ScheduleEventService
 
     $scheduleEvent = $this->objectHandlerService->setObjectData($scheduleEvent, $data);
     $this->entityManager->persist($scheduleEvent);
-    $this->entityManager->flush();
 
     return $scheduleEvent;
   }
@@ -147,7 +146,6 @@ class ScheduleEventService
     }
 
     $scheduleEvent = $this->objectHandlerService->setObjectData($scheduleEvent, $data);
-    $this->entityManager->flush();
 
     return $scheduleEvent;
   }
@@ -164,6 +162,5 @@ class ScheduleEventService
     $scheduleEvent = $this->getScheduleEvent($id);
 
     $this->entityManager->remove($scheduleEvent);
-    $this->entityManager->flush();
   }
 }

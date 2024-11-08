@@ -108,7 +108,6 @@ class CourseService
 
     $course = $this->objectHandlerService->setObjectData($course, $data);
     $this->entityManager->persist($course);
-    $this->entityManager->flush();
 
     return $course;
   }
@@ -130,7 +129,6 @@ class CourseService
     }
 
     $course = $this->objectHandlerService->setObjectData($course, $data);
-    $this->entityManager->flush();
 
     return $course;
   }
@@ -147,6 +145,5 @@ class CourseService
     $course = $this->getCourse($id);
 
     $this->entityManager->remove($course);
-    $this->entityManager->flush();
   }
 }

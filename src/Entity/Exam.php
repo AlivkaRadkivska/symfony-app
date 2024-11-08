@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ExamRepository::class)]
 class Exam implements JsonSerializable
@@ -18,25 +19,39 @@ class Exam implements JsonSerializable
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\Length(min: 3)]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\Length(min: 10)]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     private ?string $duration = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $maxGrade = null;
+    #[ORM\Column]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
+    #[Assert\Positive]
+    private ?int $maxGrade = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     private ?string $type = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull]
+    #[Assert\DateTime]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\ManyToOne(targetEntity: Course::class, inversedBy: 'exams')]
     #[ORM\JoinColumn(name: 'course_id', referencedColumnName: 'id', onDelete: 'cascade')]
+    #[Assert\NotNull]
     private ?Course $course = null;
 
     #[ORM\OneToMany(mappedBy: 'exam', targetEntity: ExamResult::class)]
@@ -134,9 +149,9 @@ class Exam implements JsonSerializable
     /**
      * getMaxGrade
      *
-     * @return string
+     * @return int
      */
-    public function getMaxGrade(): ?string
+    public function getMaxGrade(): ?int
     {
         return $this->maxGrade;
     }
@@ -144,10 +159,10 @@ class Exam implements JsonSerializable
     /**
      * setMaxGrade
      *
-     * @param  string $maxGrade
+     * @param  int $maxGrade
      * @return static
      */
-    public function setMaxGrade(string $maxGrade): static
+    public function setMaxGrade(int $maxGrade): static
     {
         $this->maxGrade = $maxGrade;
 

@@ -111,7 +111,6 @@ class TeacherService
     $teacher = $this->objectHandlerService->setObjectData($teacher, $data);
 
     $this->entityManager->persist($teacher);
-    $this->entityManager->flush();
 
     return $teacher;
   }
@@ -137,7 +136,6 @@ class TeacherService
     }
 
     $teacher = $this->objectHandlerService->setObjectData($teacher, $data);
-    $this->entityManager->flush();
 
     return $teacher;
   }
@@ -153,6 +151,5 @@ class TeacherService
     $teacher = $this->getTeacher($id);
 
     $this->entityManager->remove($teacher);
-    $this->entityManager->flush();
   }
 }

@@ -6,6 +6,7 @@ use App\Repository\ScheduleEventRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ScheduleEventRepository::class)]
 class ScheduleEvent implements JsonSerializable
@@ -16,20 +17,28 @@ class ScheduleEvent implements JsonSerializable
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull]
+    #[Assert\DateTime]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull]
+    #[Assert\DateTime]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     private ?string $meetingLink = null;
 
     #[ORM\ManyToOne(targetEntity: Course::class, inversedBy: 'scheduleEvents')]
     #[ORM\JoinColumn(name: 'course_id', referencedColumnName: 'id', onDelete: 'cascade')]
+    #[Assert\NotNull]
     private ?Course $course = null;
 
     #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'scheduleEvents')]
     #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id', onDelete: 'cascade')]
+    #[Assert\NotNull]
     private ?Group $group = null;
 
     public function getId(): ?int
