@@ -42,9 +42,11 @@ class CourseController extends AbstractController
      * @return JsonResponse
      */
     #[Route('/', name: 'get_courses')]
-    public function getCourses(): JsonResponse
+    public function getCourses(Request $request): JsonResponse
     {
-        $courses = $this->courseService->getCourses();
+        $requestData = $request->query->all();
+        $courses = $this->courseService->getCourses($requestData);
+
         return new JsonResponse($courses, Response::HTTP_OK);
     }
 

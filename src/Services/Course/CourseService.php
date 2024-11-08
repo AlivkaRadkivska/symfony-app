@@ -15,12 +15,14 @@ class CourseService
   /**
    * @var array
    */
-  public const REQUIRED_COURSE_FIELDS = [
+  private const REQUIRED_COURSE_FIELDS = [
     'name',
     'description',
     'credits',
     'teacherId'
   ];
+
+  private const ITEMS_PER_PAGE = 10;
 
   /**
    * @var EntityManagerInterface
@@ -67,9 +69,11 @@ class CourseService
    *
    * @return mixed
    */
-  public function getCourses(): mixed
+  public function getCourses(mixed $requestData): mixed
   {
-    $courses = $this->entityManager->getRepository(Course::class)->findAll();
+    $itemsPerPage = (int)isset($requestData['itemsPerPage']) ? $requestData['itemsPerPage'] : self::ITEMS_PER_PAGE;
+    $page = (int)isset($requestData['page']) ? $requestData['page'] : 1;
+    $courses = $this->entityManager->getRepository(Course::class)->getAllCoursesByFilter($requestData, $itemsPerPage, $page);
 
     return $courses;
   }
