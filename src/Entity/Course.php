@@ -62,7 +62,6 @@ class Course implements JsonSerializable
         $this->scheduleEvents = new ArrayCollection();
     }
 
-
     /**
      * getId
      *
@@ -285,7 +284,7 @@ class Course implements JsonSerializable
                 'lastName' => $this->teacher?->getLastName(),
                 'position' => $this->teacher?->getPosition(),
             ],
-            'student' => $this->getStudents()
+            'students' => $this->getStudents()
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Group;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,28 +17,50 @@ class GroupRepository extends ServiceEntityRepository
         parent::__construct($registry, Group::class);
     }
 
-    //    /**
-    //     * @return Group[] Returns an array of Group objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('g.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * getAllByFilter
+     *
+     * @param  array $data
+     * @param  int $itemsPerPage
+     * @param  int $page
+     * @return array
+     */
+    public function getAllByFilter(array $data, int $itemsPerPage, int $page): array
+    {
+        $queryBuilder = $this->createQueryBuilder('group');
 
-    //    public function findOneBySomeField($value): ?Group
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if (isset($data['name'])) {
+            $queryBuilder->andWhere('group.name LIKE :name')
+                ->setParameter('name', '%' . $data['name'] . '%');
+        }
+
+        if (isset($data['major'])) {
+            $queryBuilder->andWhere('group.major LIKE :major')
+                ->setParameter('major', '%' . $data['major'] . '%');
+        }
+
+        if (isset($data['year'])) {
+            $queryBuilder->andWhere('group.year = :year')
+                ->setParameter('year', $data['year']);
+        }
+
+        if (isset($data['departmentId'])) {
+            $queryBuilder->andWhere('group.department = :department')
+                ->setParameter('department', $data['departmentId']);
+        }
+
+        $paginator = new Paginator($queryBuilder);
+
+        $totalItems = count($paginator);
+        $pagesCount = ceil($totalItems / $itemsPerPage);
+        $paginator
+            ->getQuery()->setFirstResult($itemsPerPage * ($page - 1))
+            ->setMaxResults($itemsPerPage);
+
+        return [
+            'groups' => $paginator->getQuery()->getResult(),
+            'totalPageCount' => $pagesCount,
+            'totalItems' => $totalItems
+        ];
+    }
 }

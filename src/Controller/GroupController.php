@@ -39,12 +39,15 @@ class GroupController extends AbstractController
     /**
      * getGroups
      *
+     * @param Request $request
      * @return JsonResponse
      */
     #[Route('/', name: 'get_groups')]
-    public function getGroups(): JsonResponse
+    public function getGroups(Request $request): JsonResponse
     {
-        $groups = $this->groupService->getGroups();
+        $requestData = $request->query->all();
+        $groups = $this->groupService->getGroups($requestData);
+
         return new JsonResponse($groups, Response::HTTP_OK);
     }
 
@@ -62,7 +65,7 @@ class GroupController extends AbstractController
         $group = $this->groupService->createGroup($requestData);
         $this->entityManager->flush();
 
-        return new JsonResponse($group, Response::HTTP_OK);
+        return new JsonResponse($group, Response::HTTP_CREATED);
     }
 
     #[Route('/{id}', name: 'get_group')]

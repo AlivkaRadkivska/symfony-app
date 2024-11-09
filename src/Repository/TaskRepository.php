@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Task;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,28 +17,50 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
 
-    //    /**
-    //     * @return Task[] Returns an array of Task objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('t.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * getAllByFilter
+     *
+     * @param  array $data
+     * @param  int $itemsPerPage
+     * @param  int $page
+     * @return array
+     */
+    public function getAllByFilter(array $data, int $itemsPerPage, int $page): array
+    {
+        $queryBuilder = $this->createQueryBuilder('task');
 
-    //    public function findOneBySomeField($value): ?Task
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if (isset($data['title'])) {
+            $queryBuilder->andWhere('task.title LIKE :title')
+                ->setParameter('title', '%' . $data['title'] . '%');
+        }
+
+        if (isset($data['description'])) {
+            $queryBuilder->andWhere('task.description LIKE :description')
+                ->setParameter('description', '%' . $data['description'] . '%');
+        }
+
+        if (isset($data['maxGrade'])) {
+            $queryBuilder->andWhere('task.maxGrade = :maxGrade')
+                ->setParameter('maxGrade', $data['maxGrade']);
+        }
+
+        if (isset($data['courseId'])) {
+            $queryBuilder->andWhere('task.course = :course')
+                ->setParameter('course', $data['courseId']);
+        }
+
+        $paginator = new Paginator($queryBuilder);
+
+        $totalItems = count($paginator);
+        $pagesCount = ceil($totalItems / $itemsPerPage);
+        $paginator
+            ->getQuery()->setFirstResult($itemsPerPage * ($page - 1))
+            ->setMaxResults($itemsPerPage);
+
+        return [
+            'tasks' => $paginator->getQuery()->getResult(),
+            'totalPageCount' => $pagesCount,
+            'totalItems' => $totalItems
+        ];
+    }
 }

@@ -40,12 +40,15 @@ class ScheduleEventController extends AbstractController
     /**
      * getScheduleEvents
      *
+     * @param Request $request
      * @return JsonResponse
      */
     #[Route('/', name: 'get_schedule_events')]
-    public function getScheduleEvents(): JsonResponse
+    public function getScheduleEvents(Request $request): JsonResponse
     {
-        $scheduleEvents = $this->scheduleEventService->getScheduleEvents();
+        $requestData = $request->query->all();
+        $scheduleEvents = $this->scheduleEventService->getScheduleEvents($requestData);
+
         return new JsonResponse($scheduleEvents, Response::HTTP_OK);
     }
 
@@ -63,7 +66,7 @@ class ScheduleEventController extends AbstractController
         $scheduleEvent = $this->scheduleEventService->createScheduleEvent($requestData);
         $this->entityManager->flush();
 
-        return new JsonResponse($scheduleEvent, Response::HTTP_OK);
+        return new JsonResponse($scheduleEvent, Response::HTTP_CREATED);
     }
 
     #[Route('/{id}', name: 'get_schedule_event')]

@@ -20,6 +20,11 @@ class DepartmentService
   ];
 
   /**
+   * @var int
+   */
+  private const ITEMS_PER_PAGE = 10;
+
+  /**
    * @var EntityManagerInterface
    */
   private EntityManagerInterface $entityManager;
@@ -49,15 +54,16 @@ class DepartmentService
     $this->objectHandlerService = $objectHandlerService;
   }
 
-
   /**
    * getDepartments
    *
    * @return mixed
    */
-  public function getDepartments(): mixed
+  public function getDepartments(mixed $requestData): mixed
   {
-    $departments = $this->entityManager->getRepository(Department::class)->findAll();
+    $itemsPerPage = (int)isset($requestData['itemsPerPage']) ? $requestData['itemsPerPage'] : self::ITEMS_PER_PAGE;
+    $page = (int)isset($requestData['page']) ? $requestData['page'] : 1;
+    $departments = $this->entityManager->getRepository(Department::class)->getAllByFilter($requestData, $itemsPerPage, $page);
 
     return $departments;
   }

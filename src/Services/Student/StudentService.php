@@ -24,6 +24,11 @@ class StudentService
   ];
 
   /**
+   * @var int
+   */
+  public const ITEMS_PER_PAGE = 10;
+
+  /**
    * @var EntityManagerInterface
    */
   private EntityManagerInterface $entityManager;
@@ -75,9 +80,11 @@ class StudentService
    *
    * @return mixed
    */
-  public function getStudents(): mixed
+  public function getStudents(mixed $requestData): mixed
   {
-    $students = $this->entityManager->getRepository(Student::class)->findAll();
+    $itemsPerPage = (int)isset($requestData['itemsPerPage']) ? $requestData['itemsPerPage'] : self::ITEMS_PER_PAGE;
+    $page = (int)isset($requestData['page']) ? $requestData['page'] : 1;
+    $students = $this->entityManager->getRepository(Student::class)->getAllByFilter($requestData, $itemsPerPage, $page);
 
     return $students;
   }

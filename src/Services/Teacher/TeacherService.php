@@ -24,6 +24,11 @@ class TeacherService
   ];
 
   /**
+   * @var array
+   */
+  public const ITEMS_PER_PAGE = 10;
+
+  /**
    * @var EntityManagerInterface
    */
   private EntityManagerInterface $entityManager;
@@ -67,9 +72,12 @@ class TeacherService
    *
    * @return mixed
    */
-  public function getTeachers(): mixed
+  public function getTeachers(mixed $requestData): mixed
   {
-    $teachers = $this->entityManager->getRepository(Teacher::class)->findAll();
+    $itemsPerPage = (int)isset($requestData['itemsPerPage']) ? $requestData['itemsPerPage'] : self::ITEMS_PER_PAGE;
+    $page = (int)isset($requestData['page']) ? $requestData['page'] : 1;
+    $teachers = $this->entityManager->getRepository(Teacher::class)->getAllByFilter($requestData, $itemsPerPage, $page);
+
 
     return $teachers;
   }

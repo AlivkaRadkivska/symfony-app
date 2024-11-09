@@ -26,6 +26,11 @@ class ExamService
   ];
 
   /**
+   * @var int
+   */
+  public const ITEMS_PER_PAGE = 10;
+
+  /**
    * @var EntityManagerInterface
    */
   private EntityManagerInterface $entityManager;
@@ -68,9 +73,11 @@ class ExamService
    *
    * @return mixed
    */
-  public function getExams(): mixed
+  public function getExams(mixed $requestData): mixed
   {
-    $exams = $this->entityManager->getRepository(Exam::class)->findAll();
+    $itemsPerPage = (int)isset($requestData['itemsPerPage']) ? $requestData['itemsPerPage'] : self::ITEMS_PER_PAGE;
+    $page = (int)isset($requestData['page']) ? $requestData['page'] : 1;
+    $exams = $this->entityManager->getRepository(Exam::class)->findAllByFilter($requestData, $itemsPerPage, $page);
 
     return $exams;
   }

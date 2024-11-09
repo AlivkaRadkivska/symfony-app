@@ -25,6 +25,11 @@ class SubmissionService
   ];
 
   /**
+   * @var int
+   */
+  public const ITEMS_PER_PAGE = 10;
+
+  /**
    * @var EntityManagerInterface
    */
   private EntityManagerInterface $entityManager;
@@ -70,15 +75,16 @@ class SubmissionService
     $this->studentService = $studentService;
   }
 
-
   /**
    * getSubmissions
    *
    * @return mixed
    */
-  public function getSubmissions(): mixed
+  public function getSubmissions(mixed $requestData): mixed
   {
-    $submissions = $this->entityManager->getRepository(Submission::class)->findAll();
+    $itemsPerPage = (int)isset($requestData['itemsPerPage']) ? $requestData['itemsPerPage'] : self::ITEMS_PER_PAGE;
+    $page = (int)isset($requestData['page']) ? $requestData['page'] : 1;
+    $submissions = $this->entityManager->getRepository(Submission::class)->getAllByFilter($requestData, $itemsPerPage, $page);
 
     return $submissions;
   }

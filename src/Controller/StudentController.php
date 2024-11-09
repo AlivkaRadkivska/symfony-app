@@ -39,12 +39,15 @@ class StudentController extends AbstractController
     /**
      * getStudents
      *
+     * @param Request $request
      * @return JsonResponse
      */
     #[Route('/', name: 'get_students', methods: ['GET'])]
-    public function getStudents(): JsonResponse
+    public function getStudents(Request $request): JsonResponse
     {
-        $students = $this->studentService->getStudents();
+        $requestData = $request->query->all();
+        $students = $this->studentService->getStudents($requestData);
+
         return new JsonResponse($students, Response::HTTP_OK);
     }
 
@@ -62,7 +65,7 @@ class StudentController extends AbstractController
         $student = $this->studentService->createStudent($requestData);
         $this->entityManager->flush();
 
-        return new JsonResponse($student, Response::HTTP_OK);
+        return new JsonResponse($student, Response::HTTP_CREATED);
     }
 
     /**

@@ -39,12 +39,15 @@ class TaskController extends AbstractController
     /**
      * getTasks
      *
+     * @param Request $request
      * @return JsonResponse
      */
     #[Route('/', name: 'get_tasks')]
-    public function getTasks(): JsonResponse
+    public function getTasks(Request $request): JsonResponse
     {
-        $tasks = $this->taskService->getTasks();
+        $requestData = $request->query->all();
+        $tasks = $this->taskService->getTasks($requestData);
+
         return new JsonResponse($tasks, Response::HTTP_OK);
     }
 
@@ -62,7 +65,7 @@ class TaskController extends AbstractController
         $task = $this->taskService->createTask($requestData);
         $this->entityManager->flush();
 
-        return new JsonResponse($task, Response::HTTP_OK);
+        return new JsonResponse($task, Response::HTTP_CREATED);
     }
 
     #[Route('/{id}', name: 'get_task')]

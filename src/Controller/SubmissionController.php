@@ -39,12 +39,15 @@ class SubmissionController extends AbstractController
     /**
      * getSubmissions
      *
+     * @param Request $request
      * @return JsonResponse
      */
     #[Route('/', name: 'get_submissions')]
-    public function getSubmissions(): JsonResponse
+    public function getSubmissions(Request $request): JsonResponse
     {
-        $submissions = $this->submissionService->getSubmissions();
+        $requestData = $request->query->all();
+        $submissions = $this->submissionService->getSubmissions($requestData);
+
         return new JsonResponse($submissions, Response::HTTP_OK);
     }
 
@@ -62,7 +65,7 @@ class SubmissionController extends AbstractController
         $submission = $this->submissionService->createSubmission($requestData);
         $this->entityManager->flush();
 
-        return new JsonResponse($submission, Response::HTTP_OK);
+        return new JsonResponse($submission, Response::HTTP_CREATED);
     }
 
     #[Route('/{id}', name: 'get_submission')]

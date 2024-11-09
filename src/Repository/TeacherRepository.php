@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Teacher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,28 +17,50 @@ class TeacherRepository extends ServiceEntityRepository
         parent::__construct($registry, Teacher::class);
     }
 
-    //    /**
-    //     * @return Teacher[] Returns an array of Teacher objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('t.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * getAllByFilter
+     *
+     * @param  array $data
+     * @param  int $itemsPerPage
+     * @param  int $page
+     * @return array
+     */
+    public function getAllByFilter(array $data, int $itemsPerPage, int $page): array
+    {
+        $queryBuilder = $this->createQueryBuilder('teacher');
 
-    //    public function findOneBySomeField($value): ?Teacher
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if (isset($data['name'])) {
+            $queryBuilder->andWhere('teacher.firstName LIKE :name OR teacher.lastName LIKE :name')
+                ->setParameter('name', '%' . $data['name'] . '%');
+        }
+
+        if (isset($data['email'])) {
+            $queryBuilder->andWhere('teacher.email LIKE :email')
+                ->setParameter('email', '%' . $data['email'] . '%');
+        }
+
+        if (isset($data['position'])) {
+            $queryBuilder->andWhere('teacher.position = :position')
+                ->setParameter('position', $data['position']);
+        }
+
+        if (isset($data['departmentId'])) {
+            $queryBuilder->andWhere('department.department = :department')
+                ->setParameter('department', $data['departmentId']);
+        }
+
+        $paginator = new Paginator($queryBuilder);
+
+        $totalItems = count($paginator);
+        $pagesCount = ceil($totalItems / $itemsPerPage);
+        $paginator
+            ->getQuery()->setFirstResult($itemsPerPage * ($page - 1))
+            ->setMaxResults($itemsPerPage);
+
+        return [
+            'teachers' => $paginator->getQuery()->getResult(),
+            'totalPageCount' => $pagesCount,
+            'totalItems' => $totalItems
+        ];
+    }
 }
