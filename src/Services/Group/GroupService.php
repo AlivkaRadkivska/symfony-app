@@ -23,6 +23,11 @@ class GroupService
   ];
 
   /**
+   * @var int
+   */
+  public const ITEMS_PER_PAGE = 10;
+
+  /**
    * @var EntityManagerInterface
    */
   private EntityManagerInterface $entityManager;
@@ -66,9 +71,11 @@ class GroupService
    *
    * @return mixed
    */
-  public function getGroups(): mixed
+  public function getGroups(mixed $requestData): mixed
   {
-    $groups = $this->entityManager->getRepository(Group::class)->findAll();
+    $itemsPerPage = (int)isset($requestData['itemsPerPage']) ? $requestData['itemsPerPage'] : self::ITEMS_PER_PAGE;
+    $page = (int)isset($requestData['page']) ? $requestData['page'] : 1;
+    $groups = $this->entityManager->getRepository(Group::class)->getAllByFilter($requestData, $itemsPerPage, $page);
 
     return $groups;
   }

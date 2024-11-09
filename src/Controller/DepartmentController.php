@@ -39,12 +39,15 @@ class DepartmentController extends AbstractController
     /**
      * getDepartments
      *
+     * @param Request $request
      * @return JsonResponse
      */
     #[Route('/', name: 'get_departments')]
-    public function getDepartments(): JsonResponse
+    public function getDepartments(Request $request): JsonResponse
     {
-        $departments = $this->departmentService->getDepartments();
+        $requestData = $request->query->all();
+        $departments = $this->departmentService->getDepartments($requestData);
+
         return new JsonResponse($departments, Response::HTTP_OK);
     }
 
@@ -62,7 +65,7 @@ class DepartmentController extends AbstractController
         $department = $this->departmentService->createDepartment($requestData);
         $this->entityManager->flush();
 
-        return new JsonResponse($department, Response::HTTP_OK);
+        return new JsonResponse($department, Response::HTTP_CREATED);
     }
 
     /**

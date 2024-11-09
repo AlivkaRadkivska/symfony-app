@@ -17,7 +17,15 @@ class CourseRepository extends ServiceEntityRepository
         parent::__construct($registry, Course::class);
     }
 
-    public function getAllCoursesByFilter(array $data, int $itemsPerPage, int $page): array
+    /**
+     * getAllByFilter
+     *
+     * @param  array $data
+     * @param  int $itemsPerPage
+     * @param  int $page
+     * @return array
+     */
+    public function getAllByFilter(array $data, int $itemsPerPage, int $page): array
     {
         $queryBuilder = $this->createQueryBuilder('course');
 

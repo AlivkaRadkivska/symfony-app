@@ -40,12 +40,15 @@ class TeacherController extends AbstractController
     /**
      * getTeachers
      *
+     * @param Request $request
      * @return JsonResponse
      */
     #[Route('/', name: 'get_teachers', methods: ['GET'])]
-    public function getTeachers(): JsonResponse
+    public function getTeachers(Request $request): JsonResponse
     {
-        $teachers = $this->teacherService->getTeachers();
+        $requestData = $request->query->all();
+        $teachers = $this->teacherService->getTeachers($requestData);
+
         return new JsonResponse($teachers, Response::HTTP_OK);
     }
 
@@ -63,7 +66,7 @@ class TeacherController extends AbstractController
         $teacher = $this->teacherService->createTeacher($requestData);
         $this->entityManager->flush();
 
-        return new JsonResponse($teacher, Response::HTTP_OK);
+        return new JsonResponse($teacher, Response::HTTP_CREATED);
     }
 
     /**

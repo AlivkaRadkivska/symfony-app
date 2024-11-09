@@ -24,6 +24,11 @@ class TaskService
   ];
 
   /**
+   * @var int
+   */
+  public const ITEMS_PER_PAGE = 10;
+
+  /**
    * @var EntityManagerInterface
    */
   private EntityManagerInterface $entityManager;
@@ -66,9 +71,11 @@ class TaskService
    *
    * @return mixed
    */
-  public function getTasks(): mixed
+  public function getTasks(mixed $requestData): mixed
   {
-    $tasks = $this->entityManager->getRepository(Task::class)->findAll();
+    $itemsPerPage = (int)isset($requestData['itemsPerPage']) ? $requestData['itemsPerPage'] : self::ITEMS_PER_PAGE;
+    $page = (int)isset($requestData['page']) ? $requestData['page'] : 1;
+    $tasks = $this->entityManager->getRepository(Task::class)->getAllByFilter($requestData, $itemsPerPage, $page);
 
     return $tasks;
   }

@@ -22,6 +22,9 @@ class CourseService
     'teacherId'
   ];
 
+  /**
+   * @var int
+   */
   private const ITEMS_PER_PAGE = 10;
 
   /**
@@ -73,7 +76,7 @@ class CourseService
   {
     $itemsPerPage = (int)isset($requestData['itemsPerPage']) ? $requestData['itemsPerPage'] : self::ITEMS_PER_PAGE;
     $page = (int)isset($requestData['page']) ? $requestData['page'] : 1;
-    $courses = $this->entityManager->getRepository(Course::class)->getAllCoursesByFilter($requestData, $itemsPerPage, $page);
+    $courses = $this->entityManager->getRepository(Course::class)->getAllByFilter($requestData, $itemsPerPage, $page);
 
     return $courses;
   }

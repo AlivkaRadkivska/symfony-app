@@ -39,12 +39,15 @@ class ExamResultController extends AbstractController
     /**
      * getExamResults
      *
+     * @param Request $request
      * @return JsonResponse
      */
     #[Route('/', name: 'get_exam_results')]
-    public function getExamResults(): JsonResponse
+    public function getExamResults(Request $request): JsonResponse
     {
-        $examResults = $this->examResultService->getExamResults();
+        $requestData = $request->query->all();
+        $examResults = $this->examResultService->getExamResults($requestData);
+
         return new JsonResponse($examResults, Response::HTTP_OK);
     }
 
@@ -62,7 +65,7 @@ class ExamResultController extends AbstractController
         $examResult = $this->examResultService->createExamResult($requestData);
         $this->entityManager->flush();
 
-        return new JsonResponse($examResult, Response::HTTP_OK);
+        return new JsonResponse($examResult, Response::HTTP_CREATED);
     }
 
     #[Route('/{id}', name: 'get_exam_result')]

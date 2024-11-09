@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Exam;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,28 +17,50 @@ class ExamRepository extends ServiceEntityRepository
         parent::__construct($registry, Exam::class);
     }
 
-    //    /**
-    //     * @return Exam[] Returns an array of Exam objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('e')
-    //            ->andWhere('e.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('e.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * getAllByFilter
+     *
+     * @param  array $data
+     * @param  int $itemsPerPage
+     * @param  int $page
+     * @return array
+     */
+    public function getAllByFilter(array $data, int $itemsPerPage, int $page): array
+    {
+        $queryBuilder = $this->createQueryBuilder('exam');
 
-    //    public function findOneBySomeField($value): ?Exam
-    //    {
-    //        return $this->createQueryBuilder('e')
-    //            ->andWhere('e.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if (isset($data['title'])) {
+            $queryBuilder->andWhere('exam.title LIKE :title')
+                ->setParameter('title', '%' . $data['title'] . '%');
+        }
+
+        if (isset($data['description'])) {
+            $queryBuilder->andWhere('exam.description LIKE :description')
+                ->setParameter('description', '%' . $data['description'] . '%');
+        }
+
+        if (isset($data['type'])) {
+            $queryBuilder->andWhere('exam.type = :type')
+                ->setParameter('type', $data['type']);
+        }
+
+        if (isset($data['courseId'])) {
+            $queryBuilder->andWhere('exam.course = :course')
+                ->setParameter('course', $data['courseId']);
+        }
+
+        $paginator = new Paginator($queryBuilder);
+
+        $totalItems = count($paginator);
+        $pagesCount = ceil($totalItems / $itemsPerPage);
+        $paginator
+            ->getQuery()->setFirstResult($itemsPerPage * ($page - 1))
+            ->setMaxResults($itemsPerPage);
+
+        return [
+            'exams' => $paginator->getQuery()->getResult(),
+            'totalPageCount' => $pagesCount,
+            'totalItems' => $totalItems
+        ];
+    }
 }

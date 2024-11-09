@@ -25,6 +25,11 @@ class ScheduleEventService
   ];
 
   /**
+   * @var int
+   */
+  public const ITEMS_PER_PAGE = 10;
+
+  /**
    * @var EntityManagerInterface
    */
   private EntityManagerInterface $entityManager;
@@ -76,9 +81,11 @@ class ScheduleEventService
    *
    * @return mixed
    */
-  public function getScheduleEvents(): mixed
+  public function getScheduleEvents(mixed $requestData): mixed
   {
-    $scheduleEvents = $this->entityManager->getRepository(ScheduleEvent::class)->findAll();
+    $itemsPerPage = (int)isset($requestData['itemsPerPage']) ? $requestData['itemsPerPage'] : self::ITEMS_PER_PAGE;
+    $page = (int)isset($requestData['page']) ? $requestData['page'] : 1;
+    $scheduleEvents = $this->entityManager->getRepository(ScheduleEvent::class)->getAllByFilter($requestData, $itemsPerPage, $page);
 
     return $scheduleEvents;
   }

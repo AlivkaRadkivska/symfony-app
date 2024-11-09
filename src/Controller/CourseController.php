@@ -39,6 +39,7 @@ class CourseController extends AbstractController
     /**
      * getCourses
      *
+     * @param Request $request
      * @return JsonResponse
      */
     #[Route('/', name: 'get_courses')]
@@ -64,7 +65,7 @@ class CourseController extends AbstractController
         $course = $this->courseService->createCourse($requestData);
         $this->entityManager->flush();
 
-        return new JsonResponse($course, Response::HTTP_OK);
+        return new JsonResponse($course, Response::HTTP_CREATED);
     }
 
     /**
