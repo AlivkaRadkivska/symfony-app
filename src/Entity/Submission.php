@@ -36,10 +36,10 @@ class Submission implements JsonSerializable
     #[Assert\NotNull]
     private ?Task $task = null;
 
-    #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'submissions')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'submissions')]
     #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id', onDelete: 'cascade')]
     #[Assert\NotNull]
-    private ?Student $student = null;
+    private ?User $student = null;
 
     /**
      * getId
@@ -147,7 +147,7 @@ class Submission implements JsonSerializable
      *
      * @return Student
      */
-    public function getStudent(): ?Student
+    public function getStudent(): ?User
     {
         return $this->student;
     }

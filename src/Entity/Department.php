@@ -27,7 +27,7 @@ class Department implements JsonSerializable
     #[Assert\Length(min: 3)]
     private ?string $faculty = null;
 
-    #[ORM\OneToMany(mappedBy: 'department', targetEntity: Teacher::class)]
+    #[ORM\OneToMany(mappedBy: 'department', targetEntity: User::class)]
     #[Assert\NotNull]
     private ?Collection $teachers;
 
@@ -108,7 +108,6 @@ class Department implements JsonSerializable
                 'email' => $teacher?->getEmail(),
                 'firstName' => $teacher?->getFirstName(),
                 'secondName' => $teacher?->getLastName(),
-                'position' => $teacher?->getPosition(),
             ];
         }, iterator_to_array($this->teachers));
     }

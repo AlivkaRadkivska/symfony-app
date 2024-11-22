@@ -32,12 +32,13 @@ class Course implements JsonSerializable
     #[Assert\NotBlank]
     private ?string $credits = null;
 
-    #[ORM\ManyToOne(targetEntity: Teacher::class, inversedBy: 'courses')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'taughtCourses')]
     #[ORM\JoinColumn(name: 'teacher_id', referencedColumnName: 'id', onDelete: 'restrict')]
     #[Assert\NotNull]
-    private ?Teacher $teacher = null;
+    private ?User $teacher = null;
 
-    #[ORM\ManyToMany(targetEntity: Student::class, mappedBy: 'courses')]
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'enrolledCourses')]
+    #[ORM\JoinTable(name: 'courses_students')]
     private Collection $students;
 
     #[ORM\OneToMany(mappedBy: 'course', targetEntity: Task::class)]
@@ -146,7 +147,7 @@ class Course implements JsonSerializable
      *
      * @return Teacher
      */
-    public function getTeacher(): ?Teacher
+    public function getTeacher(): ?User
     {
         return $this->teacher;
     }
@@ -154,13 +155,15 @@ class Course implements JsonSerializable
     /**
      * setTeacher
      *
-     * @param  Teacher $teacher
+     * @param  User $teacher
      * @return static
      */
-    public function setTeacher(Teacher $teacher): static
+    public function setTeacher(User $teacher): self
     {
+        if (in_array('ROLE_TEACHER', $teacher->getRoles(), true)) {
+            throw new \InvalidArgumentException('Assigned user must have the role of "teacher".');
+        }
         $this->teacher = $teacher;
-
         return $this;
     }
 
@@ -185,30 +188,31 @@ class Course implements JsonSerializable
     /**
      * addStudent
      *
-     * @param  Student $student
+     * @param  User $student
      * @return self
      */
-    public function addStudent(Student $student): self
+    public function addStudent(User $student): self
     {
-        if (!$this->students->contains($student)) {
-            $this->students[] = $student;
-            $student->addCourse($this);
+        if (in_array('ROLE_STUDENT', $student->getRoles(), true)) {
+            throw new \InvalidArgumentException('Assigned user must have the role of "student".');
         }
-
+        if (!$this->students->contains($student)) {
+            $this->students->add($student);
+        }
         return $this;
     }
 
     /**
      * removeStudent
      *
-     * @param  Student $student
+     * @param  User $student
      * @return self
      */
-    public function removeStudent(Student $student): self
+    public function removeStudent(User $student): self
     {
         if ($this->students->contains($student)) {
-            if ($student->getCourses()->contains($this)) {
-                $student->removeCourse($this);
+            if ($student->getEnrolledCourses()->contains($this)) {
+                $student->removeEnrolledCourse($this);
             }
             $this->students->removeElement($student);
         }
@@ -282,7 +286,6 @@ class Course implements JsonSerializable
                 'email' => $this->teacher?->getEmail(),
                 'firstName' => $this->teacher?->getFirstName(),
                 'lastName' => $this->teacher?->getLastName(),
-                'position' => $this->teacher?->getPosition(),
             ],
             'students' => $this->getStudents()
         ];

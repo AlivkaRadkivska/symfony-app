@@ -6,7 +6,7 @@ use App\Entity\ExamResult;
 use App\Services\RequestCheckerService;
 use App\Services\ObjectHandlerService;
 use App\Services\Exam\ExamService;
-use App\Services\Student\StudentService;
+use App\Services\User\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -20,7 +20,7 @@ class ExamResultService
     'answer',
     'obtainedGrade',
     'examId',
-    'studentId'
+    'userId'
   ];
 
   /**
@@ -49,29 +49,29 @@ class ExamResultService
   private ExamService $examService;
 
   /**
-   * @var StudentService
+   * @var UserService
    */
-  private StudentService $studentService;
+  private UserService $userService;
 
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
    * @param ObjectHandlerService $objectHandlerService
    * @param ExamService $examService
-   * @param StudentService $studentService
+   * @param UserService $userService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
     ObjectHandlerService $objectHandlerService,
     ExamService $examService,
-    StudentService $studentService
+    UserService $userService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
     $this->objectHandlerService = $objectHandlerService;
     $this->examService = $examService;
-    $this->studentService = $studentService;
+    $this->userService = $userService;
   }
 
   /**
@@ -121,7 +121,7 @@ class ExamResultService
     $exam = $this->examService->getExam($data['examId']);
     $data['exam'] = $exam;
 
-    $student = $this->studentService->getStudent($data['studentId']);
+    $student = $this->userService->getUser($data['studentId']);
     $data['student'] = $student;
 
     $examResult = $this->objectHandlerService->setObjectData($examResult, $data);
@@ -147,7 +147,7 @@ class ExamResultService
     }
 
     if (array_key_exists('studentId', $data)) {
-      $student = $this->studentService->getStudent($data['studentId']);
+      $student = $this->userService->getUser($data['studentId']);
       $data['student'] = $student;
     }
 
