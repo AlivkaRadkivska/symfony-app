@@ -179,39 +179,4 @@ class UserService
 
     $this->entityManager->remove($User);
   }
-
-  /**
-   * joinCourse
-   *
-   * @param  string $id
-   * @param  string $courseId
-   * @return User
-   */
-  // public function joinCourse(string $id, string $courseId): User
-  // {
-  //   $User = $this->getUser($id);
-  //   $course = $this->courseService->getCourse($courseId);
-
-  //   $User->addCourse($course);
-
-  //   return $User;
-  // }
-
-  /**
-   * leaveCourse
-   *
-   * @param  string $id
-   * @param  string $courseId
-   * @return User
-   */
-  // public function leaveCourse(string $id, string $courseId): User
-
-  // {
-  //   $User = $this->getUser($id);
-  //   $course = $this->courseService->getCourse($courseId);
-
-  //   $User->removeCourse($course);
-
-  //   return $User;
-  // }
 }

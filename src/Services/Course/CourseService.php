@@ -3,6 +3,7 @@
 namespace App\Services\Course;
 
 use App\Entity\Course;
+use App\Entity\User;
 use App\Services\RequestCheckerService;
 use App\Services\ObjectHandlerService;
 use App\Services\User\UserService;
@@ -65,7 +66,6 @@ class CourseService
     $this->objectHandlerService = $objectHandlerService;
     $this->userService = $userService;
   }
-
 
   /**
    * getCourses
@@ -152,5 +152,35 @@ class CourseService
     $course = $this->getCourse($id);
 
     $this->entityManager->remove($course);
+  }
+
+  /**
+   * joinCourse
+   *
+   * @param  string $id
+   * @param  User $student
+   * @return Course
+   */
+  public function joinCourse(string $id, User $student): Course
+  {
+    $course = $this->getCourse($id);
+    $course->addStudent($student);
+
+    return $course;
+  }
+
+  /**
+   * leaveCourse
+   *
+   * @param  string $id
+   * @param  User $student
+   * @return User
+   */
+  public function leaveCourse(string $id, User $student): Course
+  {
+    $course = $this->getCourse($id);
+    $course->removeStudent($student);
+
+    return $course;
   }
 }

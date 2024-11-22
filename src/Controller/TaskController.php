@@ -42,7 +42,7 @@ class TaskController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/', name: 'get_tasks')]
+    #[Route('', name: 'get_tasks')]
     public function getTasks(Request $request): JsonResponse
     {
         $requestData = $request->query->all();

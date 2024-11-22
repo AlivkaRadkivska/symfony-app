@@ -193,12 +193,11 @@ class Course implements JsonSerializable
      */
     public function addStudent(User $student): self
     {
-        if (in_array('ROLE_STUDENT', $student->getRoles(), true)) {
-            throw new \InvalidArgumentException('Assigned user must have the role of "student".');
+        if (in_array('ROLE_STUDENT', $student->getRoles(), true) && !$this->students->contains($student)) {
+            $this->students[] = $student;
+            $student->addEnrolledCourse($this);
         }
-        if (!$this->students->contains($student)) {
-            $this->students->add($student);
-        }
+
         return $this;
     }
 
@@ -211,9 +210,7 @@ class Course implements JsonSerializable
     public function removeStudent(User $student): self
     {
         if ($this->students->contains($student)) {
-            if ($student->getEnrolledCourses()->contains($this)) {
-                $student->removeEnrolledCourse($this);
-            }
+            $student->removeEnrolledCourse($this);
             $this->students->removeElement($student);
         }
 

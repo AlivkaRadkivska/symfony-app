@@ -306,7 +306,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     {
         if (in_array('ROLE_STUDENT', $this->getRoles(), true) && !$this->enrolledCourses->contains($course)) {
             $this->enrolledCourses[] = $course;
-            $course->addStudent($this);
         }
 
         return $this;
@@ -320,10 +319,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
      */
     public function removeEnrolledCourse(Course $course): self
     {
-        if (in_array('ROLE_STUDENT', $this->getRoles(), true) && $this->enrolledCourses->contains($course)) {
-            if (in_array($this, $course->getStudents())) {
-                $course->removeStudent($this);
-            }
+        if ($this->enrolledCourses->contains($course)) {
             $this->enrolledCourses->removeElement($course);
         }
 

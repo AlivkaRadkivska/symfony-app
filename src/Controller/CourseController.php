@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
 #[Route('/course', name: 'course_routes')]
 class CourseController extends AbstractController
@@ -42,7 +43,7 @@ class CourseController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/', name: 'get_courses')]
+    #[Route('', name: 'get_courses')]
     public function getCourses(Request $request): JsonResponse
     {
         $requestData = $request->query->all();
@@ -96,6 +97,37 @@ class CourseController extends AbstractController
         $requestData = json_decode($request->getContent(), true);
 
         $course = $this->courseService->updateCourse($id, $requestData);
+        $this->entityManager->flush();
+
+        return new JsonResponse($course, Response::HTTP_OK);
+    }
+
+    /**
+     * joinCourse
+     *
+     * @param  string $id
+     * @return JsonResponse
+     */
+    #[Route('/join/{id}', name: 'let_student_join_course', methods: ['GET'])]
+    public function joinCourse(string $id, Security $security): JsonResponse
+    {
+        $course = $this->courseService->joinCourse($id, $security->getUser());
+        $this->entityManager->flush();
+
+        return new JsonResponse($course, Response::HTTP_OK);
+    }
+
+    /**
+     * leaveCourse
+     *
+     * @param  string $id
+     * @param  string $courseId
+     * @return JsonResponse
+     */
+    #[Route('/leave/{id}', name: 'let_student_leave_course', methods: ['GET'])]
+    public function leaveCourse(string $id, Security $security): JsonResponse
+    {
+        $course = $this->courseService->leaveCourse($id, $security->getUser());
         $this->entityManager->flush();
 
         return new JsonResponse($course, Response::HTTP_OK);

@@ -33,4 +33,9 @@ security:
 
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/course/leave, roles: ROLE_STUDENT, methods: [GET] }
+        - { path: ^/course/join, roles: ROLE_STUDENT, methods: [GET] }
+        - { path: ^/exam-result, roles: [ROLE_STUDENT, ROLE_TEACHER], methods: [POST, DELETE, PATCH] }
+        - { path: ^/submission, roles: [ROLE_STUDENT, ROLE_TEACHER], methods: [POST, DELETE, PATCH] }
+        - { path: ^/, roles: ROLE_TEACHER, methods: [POST, DELETE, PATCH] }
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY, methods: [GET] }

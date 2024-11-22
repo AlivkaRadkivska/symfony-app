@@ -42,7 +42,7 @@ class UserController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/', name: 'get_users', methods: ['GET'])]
+    #[Route('', name: 'get_users', methods: ['GET'])]
     public function getUsers(Request $request): JsonResponse
     {
         $requestData = $request->query->all();
@@ -96,7 +96,6 @@ class UserController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
-
     /**
      * updateUser
      *
@@ -114,36 +113,4 @@ class UserController extends AbstractController
 
         return new JsonResponse($user, Response::HTTP_OK);
     }
-
-    /**
-     * joinCourse
-     *
-     * @param  string $id
-     * @param  string $courseId
-     * @return JsonResponse
-     */
-    // #[Route('/{id}/join-course/{courseId}', name: 'update_user_join_course', methods: ['GET'])]
-    // public function joinCourse(string $id, string $courseId): JsonResponse
-    // {
-    //     $user = $this->userService->joinCourse($id, $courseId);
-    //     $this->entityManager->flush();
-
-    //     return new JsonResponse($user, Response::HTTP_OK);
-    // }
-
-    /**
-     * leaveCourse
-     *
-     * @param  string $id
-     * @param  string $courseId
-     * @return JsonResponse
-     */
-    // #[Route('/{id}/leave-course/{courseId}', name: 'update_User_leave_course', methods: ['GET'])]
-    // public function leaveCourse(string $id, string $courseId): JsonResponse
-    // {
-    //     $user = $this->userService->leaveCourse($id, $courseId);
-    //     $this->entityManager->flush();
-
-    //     return new JsonResponse($user, Response::HTTP_OK);
-    // }
 }
