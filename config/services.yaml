@@ -12,6 +12,10 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\OpenApi\JwtDecorator:
+        decorates: 'api_platform.openapi.factory'
+        arguments: ['@.inner']
+        
     App\EventListener\RuntimeConstraintExceptionListener:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }

@@ -17,25 +17,26 @@ security:
             security: false
 
         login:
-            pattern: ^/login
+            pattern: ^/api/login
             stateless: true
             json_login:
-                check_path: /login
+                check_path: /api/login
                 username_path: email
                 password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
         api:
-            pattern: ^/
+            pattern: ^/api
             stateless: true
             jwt: ~ 
 
     access_control:
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/course/leave, roles: ROLE_STUDENT, methods: [GET] }
-        - { path: ^/course/join, roles: ROLE_STUDENT, methods: [GET] }
-        - { path: ^/exam-result, roles: [ROLE_STUDENT, ROLE_TEACHER], methods: [POST, DELETE, PATCH] }
-        - { path: ^/submission, roles: [ROLE_STUDENT, ROLE_TEACHER], methods: [POST, DELETE, PATCH] }
-        - { path: ^/, roles: ROLE_TEACHER, methods: [POST, DELETE, PATCH] }
-        - { path: ^/, roles: IS_AUTHENTICATED_FULLY, methods: [GET] }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/docs, roles: PUBLIC_ACCESS }
+        # - { path: ^/course/leave, roles: ROLE_STUDENT, methods: [GET] }
+        # - { path: ^/course/join, roles: ROLE_STUDENT, methods: [GET] }
+        # - { path: ^/exam-result, roles: [ROLE_STUDENT, ROLE_TEACHER], methods: [POST, DELETE, PATCH] }
+        # - { path: ^/submission, roles: [ROLE_STUDENT, ROLE_TEACHER], methods: [POST, DELETE, PATCH] }
+        # - { path: ^/, roles: ROLE_TEACHER, methods: [POST, DELETE, PATCH] }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY, methods: [GET] }

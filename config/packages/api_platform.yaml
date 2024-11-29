@@ -1,0 +1,40 @@
+api_platform:
+    title: 'Default Project API'
+    description: 'API description'
+    version: '1.0.1'
+
+    allow_plain_identifiers: true
+    path_segment_name_generator: api_platform.path_segment_name_generator.dash
+    metadata_backward_compatibility_layer: false
+
+    defaults:
+        pagination_client_enabled: true
+        pagination_client_items_per_page: true
+    collection:
+        pagination:
+            enabled_parameter_name: pagination
+            items_per_page_parameter_name: itemsPerPage
+
+    formats:
+        json: [ 'application/json' ]
+        jsonld: [ 'application/json+ld' ]
+        html: [ 'text/html' ]
+        csv:  [ 'text/csv' ]
+        multipart: ['multipart/form-data']
+
+    error_formats:
+        json: [ 'application/json' ]
+
+    mapping:
+        paths: [ '%kernel.project_dir%/src/Entity']
+    patch_formats:
+        json:  [ 'application/merge-patch+json' ]
+        jsonld: [ 'application/json+ld' ]
+    swagger:
+        versions: [ 3 ]
+        api_keys:
+            Bearer:
+                name: Authorization
+                type: header
+    exception_to_status:
+        Symfony\Component\Security\Core\Exception\AuthenticationException: 401

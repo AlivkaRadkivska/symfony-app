@@ -3,36 +3,77 @@
 namespace App\Entity;
 
 use App\Repository\DepartmentRepository;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: DepartmentRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: ['groups' => 'get:item:department']
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => 'get:collection:department']
+        ),
+        new Post(
+            denormalizationContext: ['groups' => 'post:collection:department'],
+            normalizationContext: ['groups' => 'get:item:department']
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => 'patch:item:department'],
+            normalizationContext: ['groups' => 'get:item:department']
+        ),
+        new Delete(),
+    ],
+)]
 class Department implements JsonSerializable
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column]
+    #[Groups(['get:item:department', 'get:collection:department'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotNull]
-    #[Assert\Length(min: 3)]
+    #[Assert\NotNull, Assert\Length(min: 3)]
+    #[Groups([
+        'get:item:department',
+        'get:collection:department',
+        'post:collection:department',
+        'patch:item:department'
+    ])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotNull]
-    #[Assert\Length(min: 3)]
+    #[Assert\NotNull, Assert\Length(min: 3)]
+    #[Groups([
+        'get:item:department',
+        'get:collection:department',
+        'post:collection:department',
+        'patch:item:department'
+    ])]
     private ?string $faculty = null;
 
     #[ORM\OneToMany(mappedBy: 'department', targetEntity: User::class)]
     #[Assert\NotNull]
+    #[Groups([
+        'get:item:department',
+    ])]
     private ?Collection $teachers;
 
     #[ORM\OneToMany(mappedBy: 'department', targetEntity: Group::class)]
     #[Assert\NotNull]
+    #[Groups([
+        'get:item:department',
+    ])]
     private ?Collection $groups;
 
     /**
@@ -43,6 +84,7 @@ class Department implements JsonSerializable
     public function __construct()
     {
         $this->teachers = new ArrayCollection();
+        $this->groups = new ArrayCollection();
     }
 
     /**
