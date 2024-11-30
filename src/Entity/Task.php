@@ -3,52 +3,118 @@
 namespace App\Entity;
 
 use App\Repository\TaskRepository;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use JsonSerializable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
-class Task implements JsonSerializable
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: ['groups' => 'get:item:task']
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => 'get:collection:task']
+        ),
+        new Post(
+            denormalizationContext: ['groups' => 'post:collection:task'],
+            normalizationContext: ['groups' => 'get:item:task']
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => 'patch:item:task'],
+            normalizationContext: ['groups' => 'get:item:task']
+        ),
+        new Delete(),
+    ],
+)]
+class Task
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['get:item:task', 'get:collection:task'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\Length(min: 5)]
+    #[Groups([
+        'get:item:task',
+        'get:collection:task',
+        'post:collection:task',
+        'patch:item:task'
+    ])]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\Length(min: 10)]
+    #[Groups([
+        'get:item:task',
+        'get:collection:task',
+        'post:collection:task',
+        'patch:item:task'
+    ])]
     private ?string $description = null;
 
     #[ORM\Column]
     #[Assert\NotNull]
     #[Assert\Positive()]
+    #[Groups([
+        'get:item:task',
+        'get:collection:task',
+        'post:collection:task',
+        'patch:item:task'
+    ])]
     private ?int $maxGrade = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
+    #[Groups([
+        'get:item:task',
+        'get:collection:task',
+        'post:collection:task',
+        'patch:item:task'
+    ])]
     private ?string $type = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Context(normalizationContext: [DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     #[Assert\NotNull]
     #[Assert\DateTime]
+    #[Groups([
+        'get:item:task',
+        'get:collection:task',
+        'post:collection:task',
+        'patch:item:task'
+    ])]
     private ?\DateTimeInterface $dueDate = null;
 
     #[ORM\ManyToOne(targetEntity: Course::class, inversedBy: 'tasks')]
     #[ORM\JoinColumn(name: 'course_id', referencedColumnName: 'id', onDelete: 'cascade')]
     #[Assert\NotNull]
+    #[Groups([
+        'get:item:task',
+        'get:collection:task',
+        'post:collection:task',
+        'patch:item:task'
+    ])]
     private ?Course $course = null;
 
     #[ORM\OneToMany(mappedBy: 'task', targetEntity: Submission::class)]
+    #[Groups(['get:item:task'])]
     private ?Collection $submissions;
 
     /**
@@ -216,39 +282,6 @@ class Task implements JsonSerializable
      */
     public function getSubmissions(): mixed
     {
-        return array_map(function ($submission) {
-            return [
-                'id' => $submission?->getId(),
-                'answer' => $submission?->getAnswer(),
-                'dueDate' => $submission?->getDueDate(),
-                'student' => [
-                    "id" => $submission?->getStudent()->getId(),
-                    "firstName" => $submission?->getStudent()->getFirstName(),
-                    "lastName" => $submission?->getStudent()->getLastName(),
-                ],
-                'obtainedGrade' => $submission?->getObtainedGrade(),
-            ];
-        }, iterator_to_array($this->submissions));
-    }
-
-    /**
-     * jsonSerialize
-     *
-     * @return mixed
-     */
-    public function jsonSerialize(): mixed
-    {
-        return [
-            "id" => $this->id,
-            "title" => $this->title,
-            "description" => $this->description,
-            "maxGrade" => $this->maxGrade,
-            "type" => $this->type,
-            "dueDate" => $this->dueDate->format("Y-m-d H:i"),
-            "course" => [
-                "id" => $this->course?->getId(),
-                "name" => $this->course?->getName(),
-            ],
-        ];
+        return $this->submissions;
     }
 }

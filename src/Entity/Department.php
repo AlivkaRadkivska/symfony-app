@@ -9,10 +9,9 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Patch;
-use Doctrine\ORM\Mapping as ORM;
-use JsonSerializable;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -36,7 +35,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Delete(),
     ],
 )]
-class Department implements JsonSerializable
+class Department
 {
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     #[Groups(['get:item:department', 'get:collection:department'])]
@@ -64,17 +63,13 @@ class Department implements JsonSerializable
 
     #[ORM\OneToMany(mappedBy: 'department', targetEntity: User::class)]
     #[Assert\NotNull]
-    #[Groups([
-        'get:item:department',
-    ])]
+    #[Groups(['get:item:department'])]
     private ?Collection $teachers;
 
-    #[ORM\OneToMany(mappedBy: 'department', targetEntity: Group::class)]
+    #[ORM\OneToMany(mappedBy: 'department', targetEntity: StudentGroup::class)]
     #[Assert\NotNull]
-    #[Groups([
-        'get:item:department',
-    ])]
-    private ?Collection $groups;
+    #[Groups(['get:item:department'])]
+    private ?Collection $studentGroups;
 
     /**
      * __construct
@@ -84,7 +79,7 @@ class Department implements JsonSerializable
     public function __construct()
     {
         $this->teachers = new ArrayCollection();
-        $this->groups = new ArrayCollection();
+        $this->studentGroups = new ArrayCollection();
     }
 
     /**
@@ -144,46 +139,16 @@ class Department implements JsonSerializable
      */
     public function getTeachers(): mixed
     {
-        return array_map(function ($teacher) {
-            return [
-                'id' => $teacher?->getId(),
-                'email' => $teacher?->getEmail(),
-                'firstName' => $teacher?->getFirstName(),
-                'secondName' => $teacher?->getLastName(),
-            ];
-        }, iterator_to_array($this->teachers));
+        return $this->teachers;
     }
 
     /**
-     * getGroups
+     * getStudentGroups
      *
      * @return mixed
      */
-    public function getGroups(): mixed
+    public function getStudentGroups(): mixed
     {
-        return array_map(function ($group) {
-            return [
-                'id' => $group?->getId(),
-                'name' => $group?->getName(),
-                'major' => $group?->getMajor(),
-                'year' => $group?->getYear(),
-            ];
-        }, iterator_to_array($this->groups));
-    }
-
-    /**
-     * jsonSerialize
-     *
-     * @return mixed
-     */
-    public function jsonSerialize(): mixed
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'faculty' => $this->faculty,
-            'teachers' => $this->getTeachers(),
-            'groups' => $this->getGroups(),
-        ];
+        return $this->studentGroups;
     }
 }

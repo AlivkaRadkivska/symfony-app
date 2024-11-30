@@ -3,8 +3,14 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Doctrine\ORM\Mapping as ORM;
-use JsonSerializable;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\Common\Collections\Collection;
@@ -14,65 +20,132 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSerializable
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: ['groups' => 'get:item:user']
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => 'get:collection:user']
+        ),
+        new Post(
+            denormalizationContext: ['groups' => 'post:collection:user'],
+            normalizationContext: ['groups' => 'get:item:user']
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => 'patch:item:user'],
+            normalizationContext: ['groups' => 'get:item:user']
+        ),
+        new Delete(),
+    ],
+)]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['get:item:user', 'get:collection:user', 'get:item:department'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotNull]
     #[Assert\Email]
+    #[Groups([
+        'get:item:user',
+        'get:collection:user',
+        'post:collection:user',
+        'patch:item:user',
+        'get:item:department'
+    ])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
+    #[Groups([
+        'post:collection:user',
+        'patch:item:user'
+    ])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\Length(min: 2)]
+    #[Groups([
+        'get:item:user',
+        'get:collection:user',
+        'post:collection:user',
+        'patch:item:user',
+        'get:item:department'
+    ])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\Length(min: 2)]
+    #[Groups([
+        'get:item:user',
+        'get:collection:user',
+        'post:collection:user',
+        'patch:item:user',
+        'get:item:department'
+    ])]
     private ?string $lastName = null;
 
-    #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'students')]
+    #[ORM\ManyToOne(targetEntity: StudentGroup::class, inversedBy: 'students')]
     #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id', onDelete: 'restrict')]
-    private ?Group $group = null;
+    #[Groups([
+        'get:item:user',
+        'get:collection:user',
+        'post:collection:user',
+        'patch:item:user'
+    ])]
+    private ?StudentGroup $studentGroup = null;
 
     #[ORM\ManyToOne(targetEntity: Department::class, inversedBy: 'teachers')]
     #[ORM\JoinColumn(name: 'department_id', referencedColumnName: 'id', onDelete: 'restrict')]
+    #[Groups([
+        'get:item:user',
+        'get:collection:user',
+        'post:collection:user',
+        'patch:item:user'
+    ])]
     private ?Department $department = null;
 
     #[ORM\OneToMany(mappedBy: 'teacher', targetEntity: Course::class)]
+    #[Groups(['get:item:user'])]
     private ?Collection $taughtCourses;
 
     #[ORM\ManyToMany(targetEntity: Course::class, inversedBy: 'students')]
     #[ORM\JoinTable(name: 'courses_students')]
+    #[Groups(['get:item:user'])]
     private Collection $enrolledCourses;
 
     #[ORM\OneToMany(mappedBy: 'student', targetEntity: Submission::class)]
+    #[Groups(['get:item:user'])]
     private ?Collection $submissions;
 
     #[ORM\OneToMany(mappedBy: 'student', targetEntity: ExamResult::class)]
+    #[Groups(['get:item:user'])]
     private ?Collection $examResults;
 
     #[ORM\Column]
     #[Assert\NotNull]
     #[Assert\NotBlank]
+    #[Groups([
+        'get:item:user',
+        'get:collection:user',
+        'post:collection:user',
+        'patch:item:user'
+    ])]
     private array $roles = [];
 
     #[Assert\Callback]
     public function validateGroupForStudents(ExecutionContextInterface $context): void
     {
-        if (in_array('ROLE_STUDENT', $this->roles, true) && $this->group === null) {
+        if (in_array('ROLE_STUDENT', $this->roles, true) && $this->studentGroup === null) {
             $context->buildViolation('The group field is required for students.')
-                ->atPath('group')
+                ->atPath('student_group')
                 ->addViolation();
         }
     }
@@ -237,24 +310,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     }
 
     /**
-     * getGroup
+     * getStudentGroup
      *
-     * @return Group
+     * @return StudentGroup
      */
-    public function getGroup(): ?Group
+    public function getStudentGroup(): ?StudentGroup
     {
-        return $this->group;
+        return $this->studentGroup;
     }
 
     /**
-     * setGroup
+     * setStudentGroup
      *
-     * @param  Group $group
+     * @param  StudentGroup $studentGroup
      * @return static
      */
-    public function setGroup(Group $group): static
+    public function setStudentGroup(StudentGroup $studentGroup): static
     {
-        $this->group = $group;
+        $this->studentGroup = $studentGroup;
 
         return $this;
     }
@@ -287,13 +360,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
      */
     public function getTaughtCourses(): mixed
     {
-        return array_map(function ($course) {
-            return [
-                'id' => $course?->getId(),
-                'name' => $course?->getName(),
-                'credits' => $course?->getCredits(),
-            ];
-        }, iterator_to_array($this->taughtCourses));
+        return $this->taughtCourses;
     }
 
     /**
@@ -333,13 +400,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
      */
     public function getEnrolledCourses(): mixed
     {
-        return array_map(function ($course) {
-            return [
-                'id' => $course?->getId(),
-                'name' => $course?->getName(),
-                'credits' => $course?->getCredits(),
-            ];
-        }, iterator_to_array($this->enrolledCourses));
+        return $this->enrolledCourses;
     }
 
     /**
@@ -349,19 +410,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
      */
     public function getSubmissions(): mixed
     {
-        return array_map(function ($submission) {
-            return [
-                'id' => $submission?->getId(),
-                'answer' => $submission?->getAnswer(),
-                'dueDate' => $submission?->getDueDate(),
-                'task' => [
-                    "id" => $submission?->getTask()->getId(),
-                    "title" => $submission?->getTask()->getTitle(),
-                    "dueDate" => $submission?->getTask()->getDueDate(),
-                ],
-                'obtainedGrade' => $submission?->getObtainedGrade(),
-            ];
-        }, iterator_to_array($this->submissions));
+        return $this->submissions;
     }
 
     /**
@@ -371,44 +420,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
      */
     public function getExamResults(): mixed
     {
-        return array_map(function ($examResult) {
-            return [
-                'id' => $examResult?->getId(),
-                'answer' => $examResult?->getAnswer(),
-                'startDate' => $examResult?->getStartDate(),
-                'exam' => [
-                    "id" => $examResult?->getExam()->getId(),
-                    "title" => $examResult?->getExam()->getTitle(),
-                    "startDate" => $examResult?->getExam()->getStartDate(),
-                ],
-                'obtainedGrade' => $examResult?->getObtainedGrade(),
-            ];
-        }, iterator_to_array($this->examResults));
-    }
-
-    /**
-     * jsonSerialize
-     *
-     * @return mixed
-     */
-    public function jsonSerialize(): mixed
-    {
-        return [
-            'id' => $this->id,
-            'email' => $this->email,
-            'password' => $this->password,
-            'firstName' => $this->firstName,
-            'lastName' => $this->lastName,
-            'roles' => $this->getRoles(),
-            'group' => [
-                'id' => $this->group?->getId(),
-                'name' => $this->group?->getName(),
-                'faculty' => $this->group?->getMajor(),
-                'year' => $this->group?->getYear(),
-            ],
-            'department' => $this->department,
-            'enrolledCourses' => $this->getEnrolledCourses(),
-            'taughtCourses' => $this->getTaughtCourses()
-        ];
+        return $this->examResults;
     }
 }

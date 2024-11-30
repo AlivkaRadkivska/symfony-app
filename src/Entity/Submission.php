@@ -3,42 +3,103 @@
 namespace App\Entity;
 
 use App\Repository\SubmissionRepository;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use JsonSerializable;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SubmissionRepository::class)]
-class Submission implements JsonSerializable
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: ['groups' => 'get:item:submission']
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => 'get:collection:submission']
+        ),
+        new Post(
+            denormalizationContext: ['groups' => 'post:collection:submission'],
+            normalizationContext: ['groups' => 'get:item:submission']
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => 'patch:item:submission'],
+            normalizationContext: ['groups' => 'get:item:submission']
+        ),
+        new Delete(),
+    ],
+)]
+class Submission
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['get:item:submission', 'get:collection:submission', 'get:item:task'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
+    #[Groups([
+        'get:item:submission',
+        'get:collection:submission',
+        'post:collection:submission',
+        'patch:item:submission'
+    ])]
     private ?string $answer = null;
 
     #[ORM\Column]
     #[Assert\NotNull]
     #[Assert\Positive]
+    #[Groups([
+        'get:item:submission',
+        'get:collection:submission',
+        'post:collection:submission',
+        'patch:item:submission',
+        'get:item:task'
+    ])]
     private ?int $obtainedGrade = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Context(normalizationContext: [DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     #[Assert\NotNull]
     #[Assert\DateTime]
+    #[Groups([
+        'get:item:submission',
+        'get:collection:submission',
+        'post:collection:submission',
+        'patch:item:submission'
+    ])]
     private ?\DateTimeInterface $doneDate = null;
 
     #[ORM\ManyToOne(targetEntity: Task::class, inversedBy: 'submissions')]
     #[ORM\JoinColumn(name: 'task_id', referencedColumnName: 'id', onDelete: 'cascade')]
     #[Assert\NotNull]
+    #[Groups([
+        'get:item:submission',
+        'get:collection:submission',
+        'post:collection:submission',
+        'patch:item:submission'
+    ])]
     private ?Task $task = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'submissions')]
     #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id', onDelete: 'cascade')]
     #[Assert\NotNull]
+    #[Groups([
+        'get:item:submission',
+        'get:collection:submission',
+        'post:collection:submission',
+        'patch:item:submission',
+        'get:item:task'
+    ])]
     private ?User $student = null;
 
     /**
@@ -162,31 +223,5 @@ class Submission implements JsonSerializable
         $this->student = $student;
 
         return $this;
-    }
-
-    /**
-     * jsonSerialize
-     *
-     * @return mixed
-     */
-    public function jsonSerialize(): mixed
-    {
-        return [
-            "id" => $this->id,
-            "answer" => $this->answer,
-            "obtainedGrade" => $this->obtainedGrade,
-            "doneDate" => $this->doneDate->format('Y:m:d H:m'),
-            "task" => [
-                "id" => $this->task?->getId(),
-                "title" => $this->task?->getTitle(),
-                "dueDate" => $this->task?->getDueDate(),
-            ],
-            "student" => [
-                "id" => $this->student?->getId(),
-                "firstName" => $this->student?->getFirstName(),
-                "lastName" => $this->student?->getLastName(),
-                "email" => $this->student?->getEmail(),
-            ],
-        ];
     }
 }

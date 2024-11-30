@@ -16,41 +16,4 @@ class DepartmentRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Department::class);
     }
-
-    /**
-     * getAllByFilter
-     *
-     * @param  array $data
-     * @param  int $itemsPerPage
-     * @param  int $page
-     * @return array
-     */
-    public function getAllByFilter(array $data, int $itemsPerPage, int $page): array
-    {
-        $queryBuilder = $this->createQueryBuilder('department');
-
-        if (isset($data['name'])) {
-            $queryBuilder->andWhere('department.name LIKE :name')
-                ->setParameter('name', '%' . $data['name'] . '%');
-        }
-
-        if (isset($data['faculty'])) {
-            $queryBuilder->andWhere('department.faculty LIKE :faculty')
-                ->setParameter('faculty', '%' . $data['faculty'] . '%');
-        }
-
-        $paginator = new Paginator($queryBuilder);
-
-        $totalItems = count($paginator);
-        $pagesCount = ceil($totalItems / $itemsPerPage);
-        $paginator
-            ->getQuery()->setFirstResult($itemsPerPage * ($page - 1))
-            ->setMaxResults($itemsPerPage);
-
-        return [
-            'departments' => $paginator->getQuery()->getResult(),
-            'totalPageCount' => $pagesCount,
-            'totalItems' => $totalItems
-        ];
-    }
 }

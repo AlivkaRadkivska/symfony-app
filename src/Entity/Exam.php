@@ -3,58 +3,130 @@
 namespace App\Entity;
 
 use App\Repository\ExamRepository;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use JsonSerializable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ExamRepository::class)]
-class Exam implements JsonSerializable
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: ['groups' => 'get:item:exam']
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => 'get:collection:exam']
+        ),
+        new Post(
+            denormalizationContext: ['groups' => 'post:collection:exam'],
+            normalizationContext: ['groups' => 'get:item:exam']
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => 'patch:item:exam'],
+            normalizationContext: ['groups' => 'get:item:exam']
+        ),
+        new Delete(),
+    ],
+)]
+class Exam
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['get:item:exam', 'get:collection:exam'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\Length(min: 3)]
+    #[Groups([
+        'get:item:exam',
+        'get:collection:exam',
+        'post:collection:exam',
+        'patch:item:exam'
+    ])]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\Length(min: 10)]
+    #[Groups([
+        'get:item:exam',
+        'get:collection:exam',
+        'post:collection:exam',
+        'patch:item:exam'
+    ])]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
+    #[Groups([
+        'get:item:exam',
+        'get:collection:exam',
+        'post:collection:exam',
+        'patch:item:exam'
+    ])]
     private ?string $duration = null;
 
     #[ORM\Column]
     #[Assert\NotNull]
     #[Assert\NotBlank]
     #[Assert\Positive]
+    #[Groups([
+        'get:item:exam',
+        'get:collection:exam',
+        'post:collection:exam',
+        'patch:item:exam'
+    ])]
     private ?int $maxGrade = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
+    #[Groups([
+        'get:item:exam',
+        'get:collection:exam',
+        'post:collection:exam',
+        'patch:item:exam'
+    ])]
     private ?string $type = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Context(normalizationContext: [DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     #[Assert\NotNull]
     #[Assert\DateTime]
+    #[Groups([
+        'get:item:exam',
+        'get:collection:exam',
+        'post:collection:exam',
+        'patch:item:exam'
+    ])]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\ManyToOne(targetEntity: Course::class, inversedBy: 'exams')]
     #[ORM\JoinColumn(name: 'course_id', referencedColumnName: 'id', onDelete: 'cascade')]
     #[Assert\NotNull]
+    #[Groups([
+        'get:item:exam',
+        'get:collection:exam',
+        'post:collection:exam',
+        'patch:item:exam'
+    ])]
     private ?Course $course = null;
 
     #[ORM\OneToMany(mappedBy: 'exam', targetEntity: ExamResult::class)]
+    #[Groups(['get:item:exam'])]
     private ?Collection $examResults;
 
     /**
@@ -245,40 +317,6 @@ class Exam implements JsonSerializable
      */
     public function getExamResults(): mixed
     {
-        return array_map(function ($examResult) {
-            return [
-                'id' => $examResult?->getId(),
-                'answer' => $examResult?->getAnswer(),
-                'startDate' => $examResult?->getStartDate(),
-                'student' => [
-                    "id" => $examResult?->getStudent()->getId(),
-                    "firstName" => $examResult?->getStudent()->getFirstName(),
-                    "lastName" => $examResult?->getStudent()->getLastName(),
-                ],
-                'obtainedGrade' => $examResult?->getObtainedGrade(),
-            ];
-        }, iterator_to_array($this->examResults));
-    }
-
-    /**
-     * jsonSerialize
-     *
-     * @return mixed
-     */
-    public function jsonSerialize(): mixed
-    {
-        return [
-            "id" => $this->id,
-            "title" => $this->title,
-            "description" => $this->description,
-            "maxGrade" => $this->maxGrade,
-            "type" => $this->type,
-            "duration" => $this->duration,
-            "startDate" => $this->startDate->format("Y-m-d H:i"),
-            "course" => [
-                "id" => $this->course?->getId(),
-                "name" => $this->course?->getName(),
-            ],
-        ];
+        return $this->examResults;
     }
 }

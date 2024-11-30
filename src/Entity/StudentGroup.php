@@ -2,46 +2,103 @@
 
 namespace App\Entity;
 
-use App\Repository\GroupRepository;
-use JsonSerializable;
+use App\Repository\StudentGroupRepository;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: GroupRepository::class)]
-#[ORM\Table(name: '`group`')]
-class Group implements JsonSerializable
+#[ORM\Entity(repositoryClass: StudentGroupRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: ['groups' => 'get:item:student-group']
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => 'get:collection:student-group']
+        ),
+        new Post(
+            denormalizationContext: ['groups' => 'post:collection:student-group'],
+            normalizationContext: ['groups' => 'get:item:student-group']
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => 'patch:item:student-group'],
+            normalizationContext: ['groups' => 'get:item:student-group']
+        ),
+        new Delete(),
+    ],
+)]
+class StudentGroup
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups([
+        'get:item:student-group',
+        'get:collection:student-group',
+        'get:item:department'
+    ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\Length(min: 1)]
+    #[Groups([
+        'get:item:student-group',
+        'get:collection:student-group',
+        'post:collection:student-group',
+        'patch:item:student-group',
+        'get:item:department'
+    ])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\Length(min: 1)]
+    #[Groups([
+        'get:item:student-group',
+        'get:collection:student-group',
+        'post:collection:student-group',
+        'patch:item:student-group'
+    ])]
     private ?string $major = null;
 
     #[ORM\Column]
     #[Assert\NotNull]
     #[Assert\Positive]
+    #[Groups([
+        'get:item:student-group',
+        'get:collection:student-group',
+        'post:collection:student-group',
+        'patch:item:student-group',
+        'get:item:department'
+    ])]
     private ?int $year = null;
 
-    #[ORM\ManyToOne(targetEntity: Department::class, inversedBy: 'groups')]
+    #[ORM\ManyToOne(targetEntity: Department::class, inversedBy: 'studentGroups')]
     #[ORM\JoinColumn(name: 'department_id', referencedColumnName: 'id', onDelete: 'restrict')]
     #[Assert\NotNull]
+    #[Groups([
+        'get:item:student-group',
+        'get:collection:student-group',
+        'post:collection:student-group',
+        'patch:item:student-group'
+    ])]
     private ?Department $department = null;
 
-    #[ORM\OneToMany(mappedBy: 'group', targetEntity: User::class)]
+    #[ORM\OneToMany(mappedBy: 'studentGroup', targetEntity: User::class)]
+    #[Groups(['get:item:student-group'])]
     private ?Collection $students;
 
-    #[ORM\OneToMany(mappedBy: 'group', targetEntity: ScheduleEvent::class)]
+    #[ORM\OneToMany(mappedBy: 'studentGroup', targetEntity: ScheduleEvent::class)]
+    #[Groups(['get:item:student-group'])]
     private ?Collection $scheduleEvents;
 
     /**
@@ -166,14 +223,7 @@ class Group implements JsonSerializable
      */
     public function getStudents(): mixed
     {
-        return array_map(function ($student) {
-            return [
-                'id' => $student?->getId(),
-                'email' => $student?->getEmail(),
-                'firstName' => $student?->getFirstName(),
-                'secondName' => $student?->getLastName(),
-            ];
-        }, iterator_to_array($this->students));
+        return $this->students;
     }
 
     /**
@@ -183,34 +233,6 @@ class Group implements JsonSerializable
      */
     public function getScheduleEvents(): mixed
     {
-        return array_map(function ($scheduleEvent) {
-            return [
-                'id' => $scheduleEvent?->getId(),
-                'meetingLink' => $scheduleEvent?->getMeetingLink(),
-                'startDate' => $scheduleEvent?->getStartDate()->format('Y-m-d H:i'),
-                'endDate' => $scheduleEvent?->getEndDate()->format('Y-m-d H:i'),
-            ];
-        }, iterator_to_array($this->scheduleEvents));
-    }
-
-    /**
-     * jsonSerialize
-     *
-     * @return mixed
-     */
-    public function jsonSerialize(): mixed
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'major' => $this->major,
-            'year' => $this->year,
-            'department' => [
-                'id' => $this->department?->getId(),
-                'name' => $this->department?->getName(),
-                'faculty' => $this->department?->getFaculty()
-            ],
-            'students' => $this->getStudents(),
-        ];
+        return $this->scheduleEvents;
     }
 }

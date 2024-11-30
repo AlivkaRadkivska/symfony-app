@@ -34,9 +34,7 @@ security:
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
-        # - { path: ^/course/leave, roles: ROLE_STUDENT, methods: [GET] }
-        # - { path: ^/course/join, roles: ROLE_STUDENT, methods: [GET] }
-        # - { path: ^/exam-result, roles: [ROLE_STUDENT, ROLE_TEACHER], methods: [POST, DELETE, PATCH] }
-        # - { path: ^/submission, roles: [ROLE_STUDENT, ROLE_TEACHER], methods: [POST, DELETE, PATCH] }
-        # - { path: ^/, roles: ROLE_TEACHER, methods: [POST, DELETE, PATCH] }
+        - { path: ^/api/exam-result, roles: [ROLE_STUDENT, ROLE_TEACHER], methods: [POST, DELETE, PATCH] }
+        - { path: ^/api/submission, roles: [ROLE_STUDENT, ROLE_TEACHER], methods: [POST, DELETE, PATCH] }
+        - { path: ^/api, roles: ROLE_TEACHER, methods: [POST, DELETE, PATCH] }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY, methods: [GET] }

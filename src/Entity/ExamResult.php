@@ -3,35 +3,85 @@
 namespace App\Entity;
 
 use App\Repository\ExamResultRepository;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Doctrine\ORM\Mapping as ORM;
-use JsonSerializable;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ExamResultRepository::class)]
-class ExamResult implements JsonSerializable
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: ['groups' => 'get:item:exam-result']
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => 'get:collection:exam-result']
+        ),
+        new Post(
+            denormalizationContext: ['groups' => 'post:collection:exam-result'],
+            normalizationContext: ['groups' => 'get:item:exam-result']
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => 'patch:item:exam-result'],
+            normalizationContext: ['groups' => 'get:item:exam-result']
+        ),
+        new Delete(),
+    ],
+)]
+class ExamResult
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['get:item:exam-result', 'get:collection:exam-result'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
+    #[Groups([
+        'get:item:exam-result',
+        'get:collection:exam-result',
+        'post:collection:exam-result',
+        'patch:item:exam-result'
+    ])]
     private ?string $answer = null;
 
     #[ORM\Column]
     #[Assert\PositiveOrZero]
+    #[Groups([
+        'get:item:exam-result',
+        'get:collection:exam-result',
+        'post:collection:exam-result',
+        'patch:item:exam-result'
+    ])]
     private ?int $obtainedGrade = null;
 
     #[ORM\ManyToOne(targetEntity: Exam::class, inversedBy: 'examResults')]
     #[ORM\JoinColumn(name: 'exam_id', referencedColumnName: 'id', onDelete: 'cascade')]
     #[Assert\NotNull]
+    #[Groups([
+        'get:item:exam-result',
+        'get:collection:exam-result',
+        'post:collection:exam-result',
+        'patch:item:exam-result'
+    ])]
     private ?Exam $exam = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'examResults')]
     #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id', onDelete: 'cascade')]
     #[Assert\NotNull]
+    #[Groups([
+        'get:item:exam-result',
+        'get:collection:exam-result',
+        'post:collection:exam-result',
+        'patch:item:exam-result'
+    ])]
     private ?User $student = null;
 
     /**
@@ -131,30 +181,5 @@ class ExamResult implements JsonSerializable
         $this->student = $student;
 
         return $this;
-    }
-
-    /**
-     * jsonSerialize
-     *
-     * @return mixed
-     */
-    public function jsonSerialize(): mixed
-    {
-        return [
-            "id" => $this->id,
-            "answer" => $this->answer,
-            "obtainedGrade" => $this->obtainedGrade,
-            "exam" => [
-                "id" => $this->exam?->getId(),
-                "title" => $this->exam?->getTitle(),
-                "startDate" => $this->exam?->getStartDate(),
-            ],
-            "student" => [
-                "id" => $this->student?->getId(),
-                "firstName" => $this->student?->getFirstName(),
-                "lastName" => $this->student?->getLastName(),
-                "email" => $this->student?->getEmail(),
-            ],
-        ];
     }
 }
