@@ -42,7 +42,7 @@ class GroupController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/', name: 'get_groups')]
+    #[Route('', name: 'get_groups')]
     public function getGroups(Request $request): JsonResponse
     {
         $requestData = $request->query->all();

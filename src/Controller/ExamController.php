@@ -42,7 +42,7 @@ class ExamController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/', name: 'get_exams')]
+    #[Route('', name: 'get_exams')]
     public function getExams(Request $request): JsonResponse
     {
         $requestData = $request->query->all();

@@ -43,7 +43,7 @@ class ScheduleEventController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/', name: 'get_schedule_events')]
+    #[Route('', name: 'get_schedule_events')]
     public function getScheduleEvents(Request $request): JsonResponse
     {
         $requestData = $request->query->all();

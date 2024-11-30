@@ -42,7 +42,7 @@ class SubmissionController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/', name: 'get_submissions')]
+    #[Route('', name: 'get_submissions')]
     public function getSubmissions(Request $request): JsonResponse
     {
         $requestData = $request->query->all();

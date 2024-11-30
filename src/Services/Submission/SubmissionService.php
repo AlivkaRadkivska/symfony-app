@@ -6,7 +6,7 @@ use App\Entity\Submission;
 use App\Services\RequestCheckerService;
 use App\Services\ObjectHandlerService;
 use App\Services\Task\TaskService;
-use App\Services\Student\StudentService;
+use App\Services\User\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -21,7 +21,7 @@ class SubmissionService
     'obtainedGrade',
     'doneDate',
     'taskId',
-    'studentId'
+    'UserId'
   ];
 
   /**
@@ -50,29 +50,29 @@ class SubmissionService
   private TaskService $taskService;
 
   /**
-   * @var StudentService
+   * @var UserService
    */
-  private StudentService $studentService;
+  private UserService $userService;
 
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
    * @param RequestCheckerService $requestCheckerService
    * @param TaskService $taskService
-   * @param StudentService $studentService
+   * @param UserService $userService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
     ObjectHandlerService  $objectHandlerService,
     TaskService $taskService,
-    StudentService $studentService
+    UserService $userService
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
     $this->objectHandlerService = $objectHandlerService;
     $this->taskService = $taskService;
-    $this->studentService = $studentService;
+    $this->userService = $userService;
   }
 
   /**
@@ -121,7 +121,7 @@ class SubmissionService
     $task = $this->taskService->getTask($data['taskId']);
     $data['task'] = $task;
 
-    $student = $this->studentService->getStudent($data['studentId']);
+    $student = $this->userService->getUser($data['studentId']);
     $data['student'] = $student;
 
     $submission = $this->objectHandlerService->setObjectData($submission, $data);
@@ -147,7 +147,7 @@ class SubmissionService
     }
 
     if (array_key_exists('studentId', $data)) {
-      $student = $this->studentService->getStudent($data['studentId']);
+      $student = $this->userService->getUser($data['studentId']);
       $data['student'] = $student;
     }
 

@@ -2,19 +2,19 @@
 
 namespace App\Repository;
 
-use App\Entity\Teacher;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 /**
- * @extends ServiceEntityRepository<Teacher>
+ * @extends ServiceEntityRepository<User>
  */
-class TeacherRepository extends ServiceEntityRepository
+class UserRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Teacher::class);
+        parent::__construct($registry, User::class);
     }
 
     /**
@@ -27,27 +27,22 @@ class TeacherRepository extends ServiceEntityRepository
      */
     public function getAllByFilter(array $data, int $itemsPerPage, int $page): array
     {
-        $queryBuilder = $this->createQueryBuilder('teacher');
+        $queryBuilder = $this->createQueryBuilder('user');
 
         if (isset($data['name'])) {
-            $queryBuilder->andWhere('teacher.firstName LIKE :name OR teacher.lastName LIKE :name')
+            $queryBuilder->andWhere('user.firstName LIKE :name OR user.lastName LIKE :name')
                 ->setParameter('name', '%' . $data['name'] . '%');
         }
 
         if (isset($data['email'])) {
-            $queryBuilder->andWhere('teacher.email LIKE :email')
+            $queryBuilder->andWhere('user.email LIKE :email')
                 ->setParameter('email', '%' . $data['email'] . '%');
         }
 
-        if (isset($data['position'])) {
-            $queryBuilder->andWhere('teacher.position = :position')
-                ->setParameter('position', $data['position']);
-        }
-
-        if (isset($data['departmentId'])) {
-            $queryBuilder->andWhere('department.department = :department')
-                ->setParameter('department', $data['departmentId']);
-        }
+        // if (isset($data['role'])) {
+        //     $queryBuilder->andWhere('user.roles IS :role')
+        //         ->setParameter('role', $data['role']);
+        // }
 
         $paginator = new Paginator($queryBuilder);
 
@@ -58,7 +53,7 @@ class TeacherRepository extends ServiceEntityRepository
             ->setMaxResults($itemsPerPage);
 
         return [
-            'teachers' => $paginator->getQuery()->getResult(),
+            'users' => $paginator->getQuery()->getResult(),
             'totalPageCount' => $pagesCount,
             'totalItems' => $totalItems
         ];

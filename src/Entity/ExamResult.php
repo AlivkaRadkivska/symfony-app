@@ -29,10 +29,10 @@ class ExamResult implements JsonSerializable
     #[Assert\NotNull]
     private ?Exam $exam = null;
 
-    #[ORM\ManyToOne(targetEntity: Student::class, inversedBy: 'examResults')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'examResults')]
     #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id', onDelete: 'cascade')]
     #[Assert\NotNull]
-    private ?Student $student = null;
+    private ?User $student = null;
 
     /**
      * getId
@@ -116,7 +116,7 @@ class ExamResult implements JsonSerializable
      *
      * @return Student
      */
-    public function getStudent(): ?Student
+    public function getStudent(): ?User
     {
         return $this->student;
     }

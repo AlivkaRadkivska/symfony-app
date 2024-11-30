@@ -38,7 +38,7 @@ class Group implements JsonSerializable
     #[Assert\NotNull]
     private ?Department $department = null;
 
-    #[ORM\OneToMany(mappedBy: 'group', targetEntity: Student::class)]
+    #[ORM\OneToMany(mappedBy: 'group', targetEntity: User::class)]
     private ?Collection $students;
 
     #[ORM\OneToMany(mappedBy: 'group', targetEntity: ScheduleEvent::class)]

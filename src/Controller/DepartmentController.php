@@ -42,7 +42,7 @@ class DepartmentController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/', name: 'get_departments')]
+    #[Route('', name: 'get_departments')]
     public function getDepartments(Request $request): JsonResponse
     {
         $requestData = $request->query->all();

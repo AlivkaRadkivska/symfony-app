@@ -3,9 +3,10 @@
 namespace App\Services\Course;
 
 use App\Entity\Course;
+use App\Entity\User;
 use App\Services\RequestCheckerService;
 use App\Services\ObjectHandlerService;
-use App\Services\Teacher\TeacherService;
+use App\Services\User\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -43,29 +44,28 @@ class CourseService
   private ObjectHandlerService $objectHandlerService;
 
   /**
-   * @var TeacherService
+   * @var UserService
    */
-  private TeacherService $teacherService;
+  private UserService $userService;
 
 
   /**
    * @param EntityManagerInterface $entityManager
    * @param RequestCheckerService $requestCheckerService
    * @param ObjectHandlerService $objectHandlerService
-   * @param TeacherService $teacherService
+   * @param UserService $userService
    */
   public function __construct(
     EntityManagerInterface $entityManager,
     RequestCheckerService  $requestCheckerService,
     ObjectHandlerService $objectHandlerService,
-    TeacherService $teacherService,
+    UserService $userService,
   ) {
     $this->entityManager = $entityManager;
     $this->requestCheckerService = $requestCheckerService;
     $this->objectHandlerService = $objectHandlerService;
-    $this->teacherService = $teacherService;
+    $this->userService = $userService;
   }
-
 
   /**
    * getCourses
@@ -110,7 +110,7 @@ class CourseService
     $this->requestCheckerService::check($data, self::REQUIRED_COURSE_FIELDS);
     $course = new Course();
 
-    $teacher = $this->teacherService->getTeacher($data['teacherId']);
+    $teacher = $this->userService->getUser($data['teacherId']);
     $data['teacher'] = $teacher;
 
     $course = $this->objectHandlerService->setObjectData($course, $data);
@@ -131,7 +131,7 @@ class CourseService
     $course = $this->getCourse($id);
 
     if (array_key_exists('teacherId', $data)) {
-      $teacher = $this->teacherService->getTeacher($data['teacherId']);
+      $teacher = $this->userService->getUser($data['teacherId']);
       $data['teacher'] = $teacher;
     }
 
@@ -152,5 +152,35 @@ class CourseService
     $course = $this->getCourse($id);
 
     $this->entityManager->remove($course);
+  }
+
+  /**
+   * joinCourse
+   *
+   * @param  string $id
+   * @param  User $student
+   * @return Course
+   */
+  public function joinCourse(string $id, User $student): Course
+  {
+    $course = $this->getCourse($id);
+    $course->addStudent($student);
+
+    return $course;
+  }
+
+  /**
+   * leaveCourse
+   *
+   * @param  string $id
+   * @param  User $student
+   * @return User
+   */
+  public function leaveCourse(string $id, User $student): Course
+  {
+    $course = $this->getCourse($id);
+    $course->removeStudent($student);
+
+    return $course;
   }
 }
