@@ -105,7 +105,6 @@ class Exam
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Context(normalizationContext: [DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     #[Assert\NotNull]
-    #[Assert\DateTime]
     #[Groups([
         'get:item:exam',
         'get:collection:exam',

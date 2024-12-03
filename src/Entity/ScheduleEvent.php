@@ -47,7 +47,6 @@ class ScheduleEvent
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Context(normalizationContext: [DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     #[Assert\NotNull]
-    #[Assert\DateTime]
     #[Groups([
         'get:item:schedule-event',
         'get:collection:schedule-event',
@@ -59,7 +58,6 @@ class ScheduleEvent
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Context(normalizationContext: [DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     #[Assert\NotNull]
-    #[Assert\DateTime]
     #[Groups([
         'get:item:schedule-event',
         'get:collection:schedule-event',
@@ -91,7 +89,7 @@ class ScheduleEvent
     private ?Course $course = null;
 
     #[ORM\ManyToOne(targetEntity: StudentGroup::class, inversedBy: 'scheduleEvents')]
-    #[ORM\JoinColumn(name: 'student_group_id', referencedColumnName: 'id', onDelete: 'cascade')]
+    #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id', onDelete: 'cascade')]
     #[Assert\NotNull]
     #[Groups([
         'get:item:schedule-event',
@@ -124,7 +122,7 @@ class ScheduleEvent
     /**
      * setStartDate
      *
-     * @param  mixed $startDate
+     * @param  \DateTimeInterface $startDate
      * @return static
      */
     public function setStartDate(\DateTimeInterface $startDate): static
@@ -147,7 +145,7 @@ class ScheduleEvent
     /**
      * setEndDate
      *
-     * @param  mixed $endDate
+     * @param  \DateTimeInterface $endDate
      * @return static
      */
     public function setEndDate(\DateTimeInterface $endDate): static

@@ -93,7 +93,6 @@ class Task
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Context(normalizationContext: [DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     #[Assert\NotNull]
-    #[Assert\DateTime]
     #[Groups([
         'get:item:task',
         'get:collection:task',
@@ -242,7 +241,7 @@ class Task
     /**
      * setDueDate
      *
-     * @param  DateTimeInterface $dueDate
+     * @param  \DateTimeInterface $dueDate
      * @return static
      */
     public function setDueDate(\DateTimeInterface $dueDate): static
