@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Patch;
+use App\Action\ScheduleEvent\GetMostRecentScheduleEventAction;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
@@ -19,6 +20,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ScheduleEventRepository::class)]
 #[ApiResource(
     operations: [
+        new GetCollection(
+            name: 'get_most_recent_event',
+            uriTemplate: '/schedule-events/recent',
+            controller: GetMostRecentScheduleEventAction::class,
+            openapiContext: [
+                'summary' => 'Get 3 the most recent event'
+            ],
+            normalizationContext: ['groups' => ['get:item:schedule-event']],
+            paginationEnabled: false
+        ),
         new Get(
             normalizationContext: ['groups' => 'get:item:schedule-event']
         ),

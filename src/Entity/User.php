@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Patch;
+use App\Action\User\GetStudentsAction;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -27,6 +28,16 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
         ),
         new GetCollection(
             normalizationContext: ['groups' => 'get:collection:user']
+        ),
+        new GetCollection(
+            name: 'get_students',
+            uriTemplate: '/students',
+            controller: GetStudentsAction::class,
+            openapiContext: [
+                'summary' => 'Get all students',
+                'description' => 'Retrieve a list of all users with the role ROLE_STUDENT.',
+            ],
+            normalizationContext: ['groups' => ['get:collection:user']],
         ),
         new Post(
             denormalizationContext: ['groups' => 'post:collection:user'],

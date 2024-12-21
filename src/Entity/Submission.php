@@ -69,12 +69,9 @@ class Submission
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Context(normalizationContext: [DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
-    #[Assert\NotNull]
     #[Groups([
         'get:item:submission',
         'get:collection:submission',
-        'post:collection:submission',
-        'patch:item:submission'
     ])]
     private ?\DateTimeInterface $doneDate = null;
 

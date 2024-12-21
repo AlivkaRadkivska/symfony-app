@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Patch;
+use App\Action\Course\JoinCourseAction;
+use App\Action\Course\LeaveCourseAction;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
@@ -27,6 +29,42 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(
             denormalizationContext: ['groups' => 'post:collection:course'],
             normalizationContext: ['groups' => 'get:item:course']
+        ),
+        new Get(
+            name: 'join_course',
+            uriTemplate: '/courses/{id}/join',
+            controller: JoinCourseAction::class,
+            openapiContext: [
+                'summary' => 'Join a course',
+                'description' => 'Allows an authenticated student to join a course by course ID.',
+                'parameters' => [
+                    [
+                        'name' => 'id',
+                        'in' => 'path',
+                        'required' => true,
+                        'schema' => ['type' => 'integer'],
+                        'description' => 'The ID of the course to join'
+                    ]
+                ]
+            ]
+        ),
+        new Get(
+            name: 'leave_course',
+            uriTemplate: '/courses/{id}/leave',
+            controller: LeaveCourseAction::class,
+            openapiContext: [
+                'summary' => 'Leave a course',
+                'description' => 'Allows an authenticated student to leave a course by course ID.',
+                'parameters' => [
+                    [
+                        'name' => 'id',
+                        'in' => 'path',
+                        'required' => true,
+                        'schema' => ['type' => 'integer'],
+                        'description' => 'The ID of the course to leave'
+                    ]
+                ]
+            ]
         ),
         new Patch(
             denormalizationContext: ['groups' => 'patch:item:course'],
